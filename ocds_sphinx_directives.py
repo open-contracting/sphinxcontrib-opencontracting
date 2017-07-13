@@ -14,14 +14,8 @@ import collections
 from os.path import abspath, dirname, join
 
 
-current_dir = dirname(abspath(__file__))
+extension_json_current = None
 
-core_extensions_current = 'http://standard.open-contracting.org/extension_registry/v1.1/extensions.json'
-try:
-    extension_json_current = requests.get(core_extensions_current, timeout=1).json()
-except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
-    print("**********  Internet connection not found *************")
-    extension_json_current = {"extensions": []}
 
 class ExtensionList(Directive):
     required_arguments = 1
@@ -152,8 +146,8 @@ class ExtensionTable(CSVTable):
             return [",".join(headings)], "Extension {}".format(extension)
 
         for num, extension_obj in enumerate(extension_json_current['extensions']):
-            if not extension_obj.get('core'):
-                continue
+            #if not extension_obj.get('core'):
+            #    continue
             if extension_obj['slug'] == extension:
                 break
         else:
@@ -286,8 +280,22 @@ class CSVTableNoTranslate(CSVTable):
         return lines, None
 
 
+def download_extensions(app, env, docnames):
+    global extension_json_current
+    extensions_current = 'http://standard.open-contracting.org/extension_registry/{}/extensions.json'.format(app.config.extension_registry_git_ref)
+    try:
+        extension_json_current = requests.get(extensions_current, timeout=1).json()
+    except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
+        print("**********  Internet connection not found *************")
+        extension_json_current = {"extensions": []}
+
+
 def setup(app):
+    app.connect('env-before-read-docs', download_extensions)
+    app.add_config_value('extension_registry_git_ref', 'master', True)
+
     app.add_directive('extensionlist', ExtensionList)
     app.add_directive('extensiontable', ExtensionTable)
     app.add_directive('extensionselectortable', ExtensionSelectorTable)
     app.add_directive('csv-table-no-translate', CSVTableNoTranslate)
+
