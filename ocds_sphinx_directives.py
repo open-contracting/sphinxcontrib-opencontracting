@@ -107,6 +107,8 @@ def gather_fields(json, path="", definition=""):
     properties = json.get('properties')
     if properties:
         for field_name, field_info in properties.items():
+            if not field_info:
+                continue
             yield from gather_fields(field_info, path+'/'+field_name, definition=definition)
             for key, value in field_info.items():
                 if isinstance(value, dict):
