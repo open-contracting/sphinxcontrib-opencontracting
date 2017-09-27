@@ -67,7 +67,7 @@ class ExtensionList(Directive):
 
             link = nodes.reference(name, '', *some_term)
             path_split = pathlib.PurePath(self.state.document.attributes['source']).parts
-            root_path = pathlib.PurePath(*[".." for x in range(0, len(path_split) - path_split.index('docs') - 2)])
+            root_path = pathlib.PurePath(*[".." for x in range(0, len(path_split) - path_split.index('docs') - 1)])
 
             link['refuri'] = str(pathlib.PurePath(root_path, 'extensions', extension.get('slug', '')))
             link['translatable'] = True
