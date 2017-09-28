@@ -99,30 +99,30 @@ class ExtensionList(Directive):
 
 
 def format(text):
-    return re.sub(r'\[([^\[]+)\]\(([^\)]+)\)', r'`\1 <\2>`__', text.replace("date-time","[date-time](#date)"))
+    return re.sub(r'\[([^\[]+)\]\(([^\)]+)\)', r'`\1 <\2>`__', text.replace("date-time", "[date-time](#date)"))
 
 
-def gather_fields(json, path="", definition=""): 
+def gather_fields(json, path="", definition=""):
 
     properties = json.get('properties')
     if properties:
         for field_name, field_info in properties.items():
             if not field_info:
                 continue
-            yield from gather_fields(field_info, path+'/'+field_name, definition=definition)
+            yield from gather_fields(field_info, path + '/' + field_name, definition=definition)
             for key, value in field_info.items():
                 if isinstance(value, dict):
-                    yield from gather_fields(value, path+'/'+field_name, definition=definition)
+                    yield from gather_fields(value, path + '/' + field_name, definition=definition)
 
-            types = field_info.get('type','')
+            types = field_info.get('type', '')
             if isinstance(types, list):
-                types = format(", ".join(types).replace(", null","").replace("null,",""))
+                types = format(", ".join(types).replace(", null", "").replace("null,", ""))
             else:
                 types = format(types)
 
             description = field_info.get("description")
             if description:
-                yield [(path+'/'+field_name).lstrip("/"), definition, format(description), types]
+                yield [(path + '/' + field_name).lstrip("/"), definition, format(description), types]
 
     definitions = json.get('definitions')
     if definitions:
@@ -148,7 +148,7 @@ class ExtensionTable(CSVTable):
             return [",".join(headings)], "Extension {}".format(extension)
 
         for num, extension_obj in enumerate(extension_json_current['extensions']):
-            #if not extension_obj.get('core'):
+            # if not extension_obj.get('core'):
             #    continue
             if extension_obj['slug'] == extension:
                 break
@@ -284,7 +284,8 @@ class CSVTableNoTranslate(CSVTable):
 
 def download_extensions(app, env, docnames):
     global extension_json_current
-    extensions_current = 'http://standard.open-contracting.org/extension_registry/{}/extensions.json'.format(app.config.extension_registry_git_ref)
+    extensions_current = 'http://standard.open-contracting.org/extension_registry/{}/extensions.json'.format(
+        app.config.extension_registry_git_ref)
     try:
         extension_json_current = requests.get(extensions_current, timeout=1).json()
     except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
@@ -300,4 +301,3 @@ def setup(app):
     app.add_directive('extensiontable', ExtensionTable)
     app.add_directive('extensionselectortable', ExtensionSelectorTable)
     app.add_directive('csv-table-no-translate', CSVTableNoTranslate)
-
