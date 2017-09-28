@@ -1,4 +1,3 @@
-from sphinx.directives.code import LiteralInclude
 from docutils.parsers.rst import directives, Directive
 from docutils.parsers.rst.roles import set_classes
 from docutils.parsers.rst.directives.tables import CSVTable
@@ -10,8 +9,6 @@ import json
 import pathlib
 from collections import OrderedDict
 import requests
-import collections
-from os.path import abspath, dirname, join
 
 
 extension_json_current = None
