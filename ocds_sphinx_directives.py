@@ -273,12 +273,6 @@ class ExtensionSelectorTable(CSVTable):
         return rows, max_cols
 
 
-class CSVTableNoTranslate(CSVTable):
-    def get_csv_data(self):
-        lines, source = super().get_csv_data()
-        return lines, None
-
-
 def download_extensions(app, env, docnames):
     global extension_json_current
     extensions_current = 'http://standard.open-contracting.org/extension_registry/{}/extensions.json'.format(
@@ -297,4 +291,3 @@ def setup(app):
     app.add_directive('extensionlist', ExtensionList)
     app.add_directive('extensiontable', ExtensionTable)
     app.add_directive('extensionselectortable', ExtensionSelectorTable)
-    app.add_directive('csv-table-no-translate', CSVTableNoTranslate)
