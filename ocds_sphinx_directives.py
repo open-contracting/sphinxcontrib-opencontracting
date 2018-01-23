@@ -152,10 +152,11 @@ class ExtensionTable(CSVTable):
         else:
             raise Exception("Extension {} does not exist in the registry".format(extension))
 
-        extension_patch = json.loads(
-            requests.get(extension_obj['url'].rstrip("/") + "/" + "release-schema.json").text,
-            object_pairs_hook=OrderedDict
-        )
+        try:
+            url = extension_obj['url'].rstrip('/') + '/' + 'release-schema.json'
+            extension_patch = json.loads(requests.get(url).text, object_pairs_hook=OrderedDict)
+        except json.decoder.JSONDecodeError as e:
+            raise json.decoder.JSONDecodeError('{}: {}'.format(url, e.msg), e.doc, e.pos)
 
         data = []
         for row in gather_fields(extension_patch):
