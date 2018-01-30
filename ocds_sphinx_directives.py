@@ -136,10 +136,23 @@ class ExtensionTable(CSVTable):
                    'exclude_definitions': directives.unchanged}
 
     def get_csv_data(self):
-        headings = ["Field", "Definition", "Description", "Type"]
+        valid_options = {'extension', 'ignore_path', 'definitions', 'exclude_definitions'}
+
+        for option in self.options:
+            if option not in valid_options:
+                raise Exception('Unrecognized configuration {} in extensiontable directive'.format(option))
+
         extension = self.options.get('extension')
+        ignore_path = self.options.get('ignore_path')
+        definitions = self.options.get('definitions')
+        exclude_definitions = self.options.get('exclude_definitions')
+
         if not extension:
             raise Exception("No extension configuration in extensiontable directive")
+        if definitions and exclude_definitions:
+            raise Exception("Only one of definitions or exclude_definitions must be set in extensiontable directive")
+
+        headings = ["Field", "Definition", "Description", "Type"]
 
         if not extension_json_current['extensions']:
             return [",".join(headings)], "Extension {}".format(extension)
@@ -148,7 +161,7 @@ class ExtensionTable(CSVTable):
             if extension_obj['slug'] == extension:
                 break
         else:
-            raise Exception("Extension {} does not exist in the registry".format(extension))
+            raise Exception("Extension {} is not in the registry".format(extension))
 
         try:
             url = extension_obj['url'].rstrip('/') + '/' + 'release-schema.json'
@@ -160,16 +173,9 @@ class ExtensionTable(CSVTable):
         for row in gather_fields(extension_patch):
             data.append(row)
 
-        ignore_path = self.options.get('ignore_path')
         if ignore_path:
             for row in data:
                 row[0] = row[0].replace(ignore_path, "")
-
-        definitions = self.options.get('definitions')
-        exclude_definitions = self.options.get('exclude_definitions')
-
-        if definitions and exclude_definitions:
-            raise Exception("Only one of definitions or exclude_definitions must be set in extensiontable directive")
 
         if definitions:
             rows = []
