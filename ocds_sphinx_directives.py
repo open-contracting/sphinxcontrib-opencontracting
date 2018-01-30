@@ -100,7 +100,6 @@ def format(text):
 
 
 def gather_fields(json, path="", definition=""):
-
     properties = json.get('properties')
     if properties:
         for field_name, field_info in properties.items():
@@ -127,77 +126,26 @@ def gather_fields(json, path="", definition=""):
             yield from gather_fields(value, definition=key)
 
 
-class ExtensionTable(CSVTable):
-    option_spec = {'widths': directives.positive_int_list,
-                   'extension': directives.unchanged,
-                   'schema': directives.unchanged,
-                   'ignore_path': directives.unchanged,
-                   'definitions': directives.unchanged,
-                   'exclude_definitions': directives.unchanged}
+def get_lines(headings, data):
+    data.insert(0, headings)
+    output = io.StringIO()
+    writer = csv.writer(output)
+    for line in data:
+        writer.writerow(line)
+    return output.getvalue().splitlines()
 
-    def get_csv_data(self):
-        headings = ["Field", "Definition", "Description", "Type"]
-        extension = self.options.get('extension')
-        if not extension:
-            raise Exception("No extension configuration when using extensiontable directive")
 
-        if not extension_json_current['extensions']:
-            return [",".join(headings)], "Extension {}".format(extension)
-
-        for num, extension_obj in enumerate(extension_json_current['extensions']):
-            # if not extension_obj.get('core'):
-            #    continue
-            if extension_obj['slug'] == extension:
-                break
-        else:
-            raise Exception("Extension {} does not exist in the registry".format(extension))
-
-        try:
-            url = extension_obj['url'].rstrip('/') + '/' + 'release-schema.json'
-            extension_patch = json.loads(requests.get(url).text, object_pairs_hook=OrderedDict)
-        except json.decoder.JSONDecodeError as e:
-            raise json.decoder.JSONDecodeError('{}: {}'.format(url, e.msg), e.doc, e.pos)
-
-        data = []
-        for row in gather_fields(extension_patch):
-            data.append(row)
-
-        ignore_path = self.options.get('ignore_path')
-        if ignore_path:
-            for row in data:
-                row[0] = row[0].replace(ignore_path, "")
-
-        definitions = self.options.get('definitions')
-        if definitions:
-            definitions = definitions.split()
-            data = [row for row in data if row[1] in definitions]
-
-        exclude_definitions = self.options.get('exclude_definitions')
-        if exclude_definitions:
-            exclude_definitions = exclude_definitions.split()
-            data = [row for row in data if row[1] not in exclude_definitions]
-
-        data.insert(0, headings)
-
-        output = io.StringIO()
-        output_csv = csv.writer(output)
-        for line in data:
-            output_csv.writerow(line)
-        self.options['header-rows'] = 1
-
-        return output.getvalue().splitlines(), "Extension {}".format(extension)
-
+class AbstractExtensionTable(CSVTable):
     def parse_csv_data_into_rows(self, csv_data, dialect, source):
         # csv.py doesn't do Unicode; encode temporarily as UTF-8
         csv_reader = csv.reader([self.encode_for_csv(line + '\n')
-                                 for line in csv_data],
-                                dialect=dialect)
+                                 for line in csv_data], dialect=dialect)
         rows = []
         max_cols = 0
         for row_num, row in enumerate(csv_reader):
             row_data = []
             for cell_num, cell in enumerate(row):
-                if row_num == 0 or (cell_num != 0 and cell_num != 3):
+                if row_num == 0 or cell_num not in self.cell_num_to_not_start_new_source:
                     new_source = source
                 else:
                     new_source = ""
@@ -211,7 +159,84 @@ class ExtensionTable(CSVTable):
         return rows, max_cols
 
 
-class ExtensionSelectorTable(CSVTable):
+class ExtensionTable(AbstractExtensionTable):
+    cell_num_to_not_start_new_source = (0, 3)
+
+    option_spec = {'widths': directives.positive_int_list,
+                   'extension': directives.unchanged,
+                   'schema': directives.unchanged,
+                   'ignore_path': directives.unchanged,
+                   'definitions': directives.unchanged,
+                   'exclude_definitions': directives.unchanged}
+
+    def get_csv_data(self):
+        for option in self.options:
+            if option not in self.option_spec:
+                raise Exception('Unrecognized configuration {} in extensiontable directive'.format(option))
+
+        extension = self.options.get('extension')
+        ignore_path = self.options.get('ignore_path')
+        include_definitions = self.options.get('definitions')
+        exclude_definitions = self.options.get('exclude_definitions')
+
+        if not extension:
+            raise Exception("No extension configuration in extensiontable directive")
+        if include_definitions and exclude_definitions:
+            raise Exception("Only one of definitions or exclude_definitions must be set in extensiontable directive")
+
+        headings = ["Field", "Definition", "Description", "Type"]
+
+        if not extension_json_current['extensions']:
+            return [",".join(headings)], "Extension {}".format(extension)
+
+        for num, extension_obj in enumerate(extension_json_current['extensions']):
+            if extension_obj['slug'] == extension:
+                break
+        else:
+            raise Exception("Extension {} is not in the registry".format(extension))
+
+        try:
+            url = extension_obj['url'].rstrip('/') + '/' + 'release-schema.json'
+            extension_patch = json.loads(requests.get(url).text, object_pairs_hook=OrderedDict)
+        except json.decoder.JSONDecodeError as e:
+            raise json.decoder.JSONDecodeError('{}: {}'.format(url, e.msg), e.doc, e.pos)
+
+        data = []
+        for row in gather_fields(extension_patch):
+            data.append(row)
+
+        if ignore_path:
+            for row in data:
+                row[0] = row[0].replace(ignore_path, "")
+
+        if include_definitions or exclude_definitions:
+            operand = bool(include_definitions)
+            if include_definitions:
+                definitions = include_definitions
+            else:
+                definitions = exclude_definitions
+
+            rows = []
+            definitions = definitions.split()
+            not_found = definitions[:]
+            for row in data:
+                # This just includes or excludes rows, based on the directive's configuration.
+                if not ((row[1] in definitions) ^ operand):
+                    rows.append(row)
+                if row[1] in not_found:
+                    not_found.remove(row[1])
+            if not_found:
+                raise Exception("not found: {}".format(', '.join(not_found)))
+            data = rows
+
+        self.options['header-rows'] = 1
+
+        return get_lines(headings, data), "Extension {}".format(extension)
+
+
+class ExtensionSelectorTable(AbstractExtensionTable):
+    cell_num_to_not_start_new_source = (3,)
+
     option_spec = {'group': directives.unchanged}
 
     def get_csv_data(self):
@@ -228,9 +253,8 @@ class ExtensionSelectorTable(CSVTable):
                 return [','.join(headings)], 'Extensions'
 
             for num, extension_obj in enumerate(extension_json['extensions']):
-                if group == 'core':
-                    if not extension_obj.get('core'):
-                        continue
+                if not extension_obj.get('core'):
+                    continue
                 extension_name = extension_obj['name'].get('en')
                 extension_name = '{}::{}'.format(extension_name, extension_obj.get('documentation_url', ''))
                 extension_description = extension_obj['description'].get('en')
@@ -240,38 +264,11 @@ class ExtensionSelectorTable(CSVTable):
         else:
             data = [['', '', '', '', '']]
 
-        data.insert(0, headings)
-        output = io.StringIO()
-        output_csv = csv.writer(output)
-        for line in data:
-            output_csv.writerow(line)
-
         self.options['header-rows'] = 1
         self.options['class'] = ['extension-selector-table']
         self.options['widths'] = [8, 30, 42, 20, 0]
-        return output.getvalue().splitlines(), 'Extension registry'
 
-    def parse_csv_data_into_rows(self, csv_data, dialect, source):
-        # csv.py doesn't do Unicode; encode temporarily as UTF-8
-        csv_reader = csv.reader([self.encode_for_csv(line + '\n')
-                                 for line in csv_data], dialect=dialect)
-        rows = []
-        max_cols = 0
-        for row_num, row in enumerate(csv_reader):
-            row_data = []
-            for cell_num, cell in enumerate(row):
-                if row_num == 0 or cell_num != 3:
-                    new_source = source
-                else:
-                    new_source = ""
-                # decode UTF-8 back to Unicode
-                cell_text = self.decode_from_csv(cell)
-                cell_data = (0, 0, 0, statemachine.StringList(
-                    cell_text.splitlines(), source=new_source))
-                row_data.append(cell_data)
-            rows.append(row_data)
-            max_cols = max(max_cols, len(row))
-        return rows, max_cols
+        return get_lines(headings, data), 'Extension registry'
 
 
 def download_extensions(app, env, docnames):
