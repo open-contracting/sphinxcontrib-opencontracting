@@ -176,12 +176,12 @@ class ExtensionTable(AbstractExtensionTable):
 
         extension = self.options.get('extension')
         ignore_path = self.options.get('ignore_path')
-        definitions = self.options.get('definitions')
+        include_definitions = self.options.get('definitions')
         exclude_definitions = self.options.get('exclude_definitions')
 
         if not extension:
             raise Exception("No extension configuration in extensiontable directive")
-        if definitions and exclude_definitions:
+        if include_definitions and exclude_definitions:
             raise Exception("Only one of definitions or exclude_definitions must be set in extensiontable directive")
 
         headings = ["Field", "Definition", "Description", "Type"]
@@ -209,30 +209,24 @@ class ExtensionTable(AbstractExtensionTable):
             for row in data:
                 row[0] = row[0].replace(ignore_path, "")
 
-        if definitions:
+        if include_definitions or exclude_definitions:
+            operand = bool(include_definitions)
+            if include_definitions:
+                definitions = include_definitions
+            else:
+                definitions = exclude_definitions
+
             rows = []
             definitions = definitions.split()
             not_found = definitions[:]
             for row in data:
-                if row[1] in definitions:
+                # This just includes or excludes rows, based on the directive's configuration.
+                if not ((row[1] in definitions) ^ operand):
                     rows.append(row)
                 if row[1] in not_found:
                     not_found.remove(row[1])
             if not_found:
-                raise Exception("definitions not found: {}".format(', '.join(not_found)))
-            data = rows
-
-        if exclude_definitions:
-            rows = []
-            exclude_definitions = exclude_definitions.split()
-            not_found = exclude_definitions[:]
-            for row in data:
-                if row[1] not in exclude_definitions:
-                    rows.append(row)
-                if row[1] in not_found:
-                    not_found.remove(row[1])
-            if not_found:
-                raise Exception("exclude_definitions not found: {}".format(', '.join(not_found)))
+                raise Exception("not found: {}".format(', '.join(not_found)))
             data = rows
 
         self.options['header-rows'] = 1
