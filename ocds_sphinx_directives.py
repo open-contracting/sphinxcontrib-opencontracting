@@ -170,10 +170,8 @@ class ExtensionTable(AbstractExtensionTable):
                    'exclude_definitions': directives.unchanged}
 
     def get_csv_data(self):
-        valid_options = {'extension', 'ignore_path', 'definitions', 'exclude_definitions'}
-
         for option in self.options:
-            if option not in valid_options:
+            if option not in self.option_spec:
                 raise Exception('Unrecognized configuration {} in extensiontable directive'.format(option))
 
         extension = self.options.get('extension')
