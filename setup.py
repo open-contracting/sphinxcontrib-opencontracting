@@ -9,8 +9,13 @@ setup(
     platforms=['any'],
     license='Apache',
     packages=find_packages(),
+    entry_points='''
+[babel.extractors]
+codelists_text = ocds_sphinx_directives:codelists_extract
+jsonschema_text = ocds_sphinx_directives:jsonschema_extract
+''',
     install_requires=[
         'docutils',
         'requests',
-    ]
+    ],
 )
