@@ -4,15 +4,19 @@ import json
 import pathlib
 import re
 from collections import OrderedDict
+from datetime import timedelta
+from io import StringIO
 
 import requests
+import requests_cache
 from docutils import nodes, statemachine
 from docutils.parsers.rst import directives, Directive
 from docutils.parsers.rst.roles import set_classes
 from docutils.parsers.rst.directives.tables import CSVTable
 
 
-extension_json_current = None
+# Cache requests for extensions data, long enough for build to complete.
+requests_cache.install_cache(expire_after=timedelta(hours=1))
 
 
 class ExtensionList(Directive):
@@ -24,6 +28,9 @@ class ExtensionList(Directive):
                    'list': directives.unchanged}
 
     def run(self):
+        config = self.state.document.settings.env.config
+        version = 'v{}'.format(config.release)
+
         extension_list_name = self.options.pop('list', '')
         set_classes(self.options)
 
@@ -49,25 +56,26 @@ class ExtensionList(Directive):
         definition_list.line = 0
 
         num = 0
-        for num, extension in enumerate(extension_json_current['extensions']):
-            if not extension.get('core'):
-                continue
-            category = extension.get('category')
-            if extension_list_name and category != extension_list_name:
+        for num, row in extension_versions_csv_enumerator():
+            # Only list core extensions whose version matches the version specified in `conf.py` and whose category
+            # matches the category specified by the directive's `list` option.
+            if (row['Core'] != 'true' or row['Version'] != version or
+                    extension_list_name and row['Category'] != extension_list_name):
                 continue
 
-            name = extension['name']['en']
-            description = extension['description']['en']
+            extension_json = requests.get(row['Base URL'] + 'extension.json').json()
+
+            name = extension_json['name']['en']
+            description = extension_json['description']['en']
 
             some_term, _ = self.state.inline_text(name, self.lineno)
-
             some_def, _ = self.state.inline_text(description, self.lineno)
 
             link = nodes.reference(name, '', *some_term)
             path_split = pathlib.PurePath(self.state.document.attributes['source']).parts
             root_path = pathlib.PurePath(*[".." for x in range(0, len(path_split) - path_split.index('docs') - 1)])
 
-            link['refuri'] = str(pathlib.PurePath(root_path, 'extensions', extension.get('slug', '')))
+            link['refuri'] = str(pathlib.PurePath(root_path, 'extensions', row['Id']))
             link['translatable'] = True
             link.source = 'extension_list_' + extension_list_name
             link.line = num + 1
@@ -139,8 +147,7 @@ def get_lines(headings, data):
 class AbstractExtensionTable(CSVTable):
     def parse_csv_data_into_rows(self, csv_data, dialect, source):
         # csv.py doesn't do Unicode; encode temporarily as UTF-8
-        csv_reader = csv.reader([self.encode_for_csv(line + '\n')
-                                 for line in csv_data], dialect=dialect)
+        csv_reader = csv.reader([self.encode_for_csv(line + '\n') for line in csv_data], dialect=dialect)
         rows = []
         max_cols = 0
         for row_num, row in enumerate(csv_reader):
@@ -187,17 +194,14 @@ class ExtensionTable(AbstractExtensionTable):
 
         headings = ["Field", "Definition", "Description", "Type"]
 
-        if not extension_json_current['extensions']:
-            return [",".join(headings)], "Extension {}".format(extension)
-
-        for num, extension_obj in enumerate(extension_json_current['extensions']):
-            if extension_obj['slug'] == extension:
+        for num, row in extension_versions_csv_enumerator():
+            if row['Id'] == extension:
                 break
         else:
             raise Exception("Extension {} is not in the registry".format(extension))
 
         try:
-            url = extension_obj['url'].rstrip('/') + '/' + 'release-schema.json'
+            url = row['Base URL'] + 'release-schema.json'
             extension_patch = json.loads(requests.get(url).text, object_pairs_hook=OrderedDict)
         except json.decoder.JSONDecodeError as e:
             raise json.decoder.JSONDecodeError('{}: {}'.format(url, e.msg), e.doc, e.pos)
@@ -249,18 +253,15 @@ class ExtensionSelectorTable(AbstractExtensionTable):
             raise Exception('Extension group must be either "core" or "community"')
 
         if group == 'core':
-            extension_json = extension_json_current
-            if not extension_json.get('extensions'):
-                return [','.join(headings)], 'Extensions'
-
-            for num, extension_obj in enumerate(extension_json['extensions']):
-                if not extension_obj.get('core'):
+            for num, row in extension_versions_csv_enumerator():
+                if row['Core'] != 'true':
                     continue
-                extension_name = extension_obj['name'].get('en')
-                extension_name = '{}::{}'.format(extension_name, extension_obj.get('documentation_url', ''))
-                extension_description = extension_obj['description'].get('en')
-                row = ['', extension_name, extension_description, extension_obj['category'],
-                       '{}extension.json'.format(extension_obj['url'])]
+
+                extension_json = requests.get(row['Base URL'] + 'extension.json').json()
+                extension_name = extension_json['name']['en']
+                extension_name = '{}::{}'.format(extension_name, extension_json['documentationUrl']['en'])
+                extension_description = extension_json['description']['en']
+                row = ['', extension_name, extension_description, row['Category'], row['Base URL'] + 'extension.json']
                 data.append(row)
         else:
             data = [['', '', '', '', '']]
@@ -272,21 +273,13 @@ class ExtensionSelectorTable(AbstractExtensionTable):
         return get_lines(headings, data), 'Extension registry'
 
 
-def download_extensions(app, env, docnames):
-    global extension_json_current
-    extensions_current = 'http://standard.open-contracting.org/extension_registry/{}/extensions.json'.format(
-        app.config.extension_registry_git_ref)
-    try:
-        extension_json_current = requests.get(extensions_current, timeout=1).json()
-    except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
-        print("**********  Internet connection not found *************")
-        extension_json_current = {"extensions": []}
+def extension_versions_csv_enumerator():
+    url = 'https://raw.githubusercontent.com/open-contracting/extension_registry/master/extension_versions.csv'
+    reader = csv.DictReader(StringIO(requests.get(url).text))
+    return enumerate(reader)
 
 
 def setup(app):
-    app.connect('env-before-read-docs', download_extensions)
-    app.add_config_value('extension_registry_git_ref', 'master', True)
-
     app.add_directive('extensionlist', ExtensionList)
     app.add_directive('extensiontable', ExtensionTable)
     app.add_directive('extensionselectortable', ExtensionSelectorTable)
