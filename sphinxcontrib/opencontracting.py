@@ -178,6 +178,8 @@ class ExtensionTable(AbstractExtensionTable):
                    'exclude_definitions': directives.unchanged}
 
     def get_csv_data(self):
+        extension_versions = self.state.document.settings.env.config.extension_versions
+
         for option in self.options:
             if option not in self.option_spec:
                 raise Exception('Unrecognized configuration {} in extensiontable directive'.format(option))
@@ -195,7 +197,7 @@ class ExtensionTable(AbstractExtensionTable):
         headings = ["Field", "Definition", "Description", "Type"]
 
         for num, row in extension_versions_csv_enumerator():
-            if row['Id'] == extension:
+            if row['Id'] == extension and row['Version'] == extension_versions[extension]:
                 break
         else:
             raise Exception("Extension {} is not in the registry".format(extension))
@@ -245,6 +247,9 @@ class ExtensionSelectorTable(AbstractExtensionTable):
     option_spec = {'group': directives.unchanged}
 
     def get_csv_data(self):
+        config = self.state.document.settings.env.config
+        version = 'v{}'.format(config.release)
+
         data = []
         headings = ['', 'Extension', 'Description', 'Category', 'Extension URL']
         group = self.options.get('group')
@@ -254,7 +259,7 @@ class ExtensionSelectorTable(AbstractExtensionTable):
 
         if group == 'core':
             for num, row in extension_versions_csv_enumerator():
-                if row['Core'] != 'true':
+                if row['Core'] != 'true' or row['Version'] != version:
                     continue
 
                 extension_json = requests.get(row['Base URL'] + 'extension.json').json()
