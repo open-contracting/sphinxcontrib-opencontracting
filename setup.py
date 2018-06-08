@@ -7,6 +7,7 @@ setup(
     install_requires=[
         'docutils',
         'requests',
+        'requests-cache',
     ],
     namespace_packages=['sphinxcontrib'],
 )
