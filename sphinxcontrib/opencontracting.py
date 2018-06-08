@@ -56,7 +56,7 @@ class ExtensionList(Directive):
         definition_list.line = 0
 
         num = 0
-        for num, row in extension_versions_csv_enumerator():
+        for num, row in enumerate(extension_versions_csv_reader()):
             # Only list core extensions whose version matches the version specified in `conf.py` and whose category
             # matches the category specified by the directive's `list` option.
             if (row['Core'] != 'true' or row['Version'] != version or
@@ -196,11 +196,11 @@ class ExtensionTable(AbstractExtensionTable):
 
         headings = ["Field", "Definition", "Description", "Type"]
 
-        for num, row in extension_versions_csv_enumerator():
+        for row in extension_versions_csv_reader():
             if row['Id'] == extension and row['Version'] == extension_versions[extension]:
                 break
         else:
-            raise Exception("Extension {} is not in the registry".format(extension))
+            raise Exception("Extension {} {} is not in the registry".format(extension, extension_versions[extension]))
 
         try:
             url = row['Base URL'] + 'release-schema.json'
@@ -258,7 +258,7 @@ class ExtensionSelectorTable(AbstractExtensionTable):
             raise Exception('Extension group must be either "core" or "community"')
 
         if group == 'core':
-            for num, row in extension_versions_csv_enumerator():
+            for row in extension_versions_csv_reader():
                 if row['Core'] != 'true' or row['Version'] != version:
                     continue
 
@@ -278,10 +278,9 @@ class ExtensionSelectorTable(AbstractExtensionTable):
         return get_lines(headings, data), 'Extension registry'
 
 
-def extension_versions_csv_enumerator():
+def extension_versions_csv_reader():
     url = 'https://raw.githubusercontent.com/open-contracting/extension_registry/master/extension_versions.csv'
-    reader = csv.DictReader(StringIO(requests.get(url).text))
-    return enumerate(reader)
+    return csv.DictReader(StringIO(requests.get(url).text))
 
 
 def setup(app):
