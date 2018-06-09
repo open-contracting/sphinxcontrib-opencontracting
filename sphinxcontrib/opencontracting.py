@@ -279,7 +279,7 @@ class ExtensionSelectorTable(AbstractExtensionTable):
 
 
 def extension_versions_csv_reader():
-    url = 'https://raw.githubusercontent.com/open-contracting/extension_registry/master/extension_versions.csv'
+    url = 'https://raw.githubusercontent.com/open-contracting/extension_registry/master/build/extension_versions_wide.csv'  # noqa
     return csv.DictReader(StringIO(requests.get(url).text))
 
 
