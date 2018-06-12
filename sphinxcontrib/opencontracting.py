@@ -28,8 +28,7 @@ class ExtensionList(Directive):
                    'list': directives.unchanged}
 
     def run(self):
-        config = self.state.document.settings.env.config
-        version = 'v{}'.format(config.release)
+        extension_versions = self.state.document.settings.env.config.extension_versions
 
         extension_list_name = self.options.pop('list', '')
         set_classes(self.options)
@@ -57,15 +56,14 @@ class ExtensionList(Directive):
 
         # Only list core extensions whose version matches the version specified in `conf.py` and whose category matches
         # the category specified by the directive's `list` option.
-        kwargs = {
-            'core': True,
-            'version': version,
-        }
-        if extension_list_name:
-            kwargs['category'] = extension_list_name
 
         num = 0
-        for num, extension in enumerate(extension_registry().filter(**kwargs)):
+        registry = extension_registry()
+        for identifier, version in extension_versions.items():
+            extension = registry.get(id=identifier, core=True, version=version)
+            if extension_list_name and extension.category != extension_list_name:
+                continue
+
             metadata = extension.metadata
             name = metadata['name']['en']
             description = metadata['description']['en']
@@ -248,8 +246,7 @@ class ExtensionSelectorTable(AbstractExtensionTable):
     option_spec = {'group': directives.unchanged}
 
     def get_csv_data(self):
-        config = self.state.document.settings.env.config
-        version = 'v{}'.format(config.release)
+        extension_versions = self.state.document.settings.env.config.extension_versions
 
         data = []
         headings = ['', 'Extension', 'Description', 'Category', 'Extension URL']
@@ -259,7 +256,9 @@ class ExtensionSelectorTable(AbstractExtensionTable):
             raise Exception('group must be either "core" or "community" in extensionselectortable directive')
 
         if group == 'core':
-            for extension in extension_registry().filter(core=True, version=version):
+            registry = extension_registry()
+            for identifier, version in extension_versions.items():
+                extension = registry.get(id=identifier, core=True, version=version)
                 metadata = extension.metadata
                 data.append([
                     '',
