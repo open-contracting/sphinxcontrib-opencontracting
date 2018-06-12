@@ -91,6 +91,9 @@ class ExtensionList(Directive):
             text.line = num + 1
             definition_list += nodes.definition(description, text)
 
+        if extension_list_name and not extension_registry().filter(category=extension_list_name):
+            raise self.warning('No extensions have category {} in extensionlist directive'.format(extension_list_name))
+
         admonition_node += definition_list
 
         community = "The following are community extensions and are not maintained by Open Contracting Partnership."
@@ -184,7 +187,7 @@ class ExtensionTable(AbstractExtensionTable):
 
         for option in self.options:
             if option not in self.option_spec:
-                raise Exception('Unrecognized configuration {} in extensiontable directive'.format(option))
+                raise Exception('Unrecognized {} option in extensiontable directive'.format(option))
 
         extension = self.options.get('extension')
         ignore_path = self.options.get('ignore_path')
@@ -192,7 +195,7 @@ class ExtensionTable(AbstractExtensionTable):
         exclude_definitions = self.options.get('exclude_definitions')
 
         if not extension:
-            raise Exception("No extension configuration in extensiontable directive")
+            raise Exception("No extension option in extensiontable directive")
         if include_definitions and exclude_definitions:
             raise Exception("Only one of definitions or exclude_definitions must be set in extensiontable directive")
 
@@ -253,7 +256,7 @@ class ExtensionSelectorTable(AbstractExtensionTable):
         group = self.options.get('group')
 
         if group not in ('core', 'community'):
-            raise Exception('Extension group must be either "core" or "community"')
+            raise Exception('group must be either "core" or "community" in extensionselectortable directive')
 
         if group == 'core':
             for extension in extension_registry().filter(core=True, version=version):
