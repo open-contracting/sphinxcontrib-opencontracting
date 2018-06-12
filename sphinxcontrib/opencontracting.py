@@ -198,10 +198,7 @@ class ExtensionTable(AbstractExtensionTable):
 
         headings = ["Field", "Definition", "Description", "Type"]
 
-        try:
-            version = extension_registry().get(id=extension, version=extension_versions[extension])
-        except StopIteration:
-            raise Exception("Extension {} {} is not in the registry".format(extension, extension_versions[extension]))
+        version = extension_registry().get(id=extension, version=extension_versions[extension])
 
         try:
             url = version.base_url + 'release-schema.json'
