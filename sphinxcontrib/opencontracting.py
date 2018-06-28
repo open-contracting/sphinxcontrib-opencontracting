@@ -4,19 +4,12 @@ import json
 import pathlib
 import re
 from collections import OrderedDict
-from datetime import timedelta
 
-import requests
-import requests_cache
 from docutils import nodes, statemachine
 from docutils.parsers.rst import directives, Directive
 from docutils.parsers.rst.roles import set_classes
 from docutils.parsers.rst.directives.tables import CSVTable
 from ocdsextensionregistry import ExtensionRegistry
-
-
-# Cache requests for extensions data, long enough for build to complete.
-requests_cache.install_cache(expire_after=timedelta(hours=1))
 
 
 class ExtensionList(Directive):
