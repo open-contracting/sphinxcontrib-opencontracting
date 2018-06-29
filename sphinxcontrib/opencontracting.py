@@ -4,19 +4,12 @@ import json
 import pathlib
 import re
 from collections import OrderedDict
-from datetime import timedelta
 
-import requests
-import requests_cache
 from docutils import nodes, statemachine
 from docutils.parsers.rst import directives, Directive
 from docutils.parsers.rst.roles import set_classes
 from docutils.parsers.rst.directives.tables import CSVTable
 from ocdsextensionregistry import ExtensionRegistry
-
-
-# Cache requests for extensions data, long enough for build to complete.
-requests_cache.install_cache(expire_after=timedelta(hours=1))
 
 
 class ExtensionList(Directive):
@@ -201,11 +194,7 @@ class ExtensionTable(AbstractExtensionTable):
 
         version = extension_registry().get(id=extension, version=extension_versions[extension])
 
-        try:
-            url = version.base_url + 'release-schema.json'
-            extension_patch = json.loads(requests.get(url).text, object_pairs_hook=OrderedDict)
-        except json.decoder.JSONDecodeError as e:
-            raise json.decoder.JSONDecodeError('{}: {}'.format(url, e.msg), e.doc, e.pos)
+        extension_patch = json.loads(version.remote('release-schema.json'), object_pairs_hook=OrderedDict)
 
         data = []
         for row in gather_fields(extension_patch):

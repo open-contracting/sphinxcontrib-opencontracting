@@ -6,9 +6,7 @@ setup(
     packages=['sphinxcontrib'],
     install_requires=[
         'docutils',
-        'ocdsextensionregistry>=0.0.2',
-        'requests',
-        'requests-cache',
+        'ocdsextensionregistry>=0.0.4',
     ],
     namespace_packages=['sphinxcontrib'],
 )
