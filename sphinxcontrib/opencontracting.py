@@ -4,12 +4,39 @@ import json
 import pathlib
 import re
 from collections import OrderedDict
+from functools import lru_cache
 
+import requests
 from docutils import nodes, statemachine
 from docutils.parsers.rst import directives, Directive
 from docutils.parsers.rst.roles import set_classes
 from docutils.parsers.rst.directives.tables import CSVTable
 from ocdsextensionregistry import ExtensionRegistry
+
+
+@lru_cache()
+def get_extension_explorer_extensions_json():
+    return requests.get('https://extensions.open-contracting.org/extensions.json').json()
+
+
+class ExtensionExplorerLinkList(Directive):
+    def run(self):
+        config = self.state.document.settings.env.config
+        extension_versions = config.extension_versions
+        language = config.overrides.get('language', 'en')
+
+        items = []
+        extensions = get_extension_explorer_extensions_json()
+        template = 'https://extensions.open-contracting.org/{}/extensions/{}/{}/'
+
+        for identifier, version in extension_versions.items():
+            reference = nodes.reference('', extensions[identifier]['versions'][version]['metadata']['name'][language],
+                                        refuri=template.format(language, identifier, version))
+            paragraph = nodes.paragraph('', '', reference)
+            item = nodes.list_item('', paragraph)
+            items.append(item)
+
+        return [nodes.bullet_list('', *items)]
 
 
 class ExtensionList(Directive):
@@ -274,6 +301,7 @@ def extension_registry():
 
 
 def setup(app):
+    app.add_directive('extensionexplorerlinklist', ExtensionExplorerLinkList)
     app.add_directive('extensionlist', ExtensionList)
     app.add_directive('extensiontable', ExtensionTable)
     app.add_directive('extensionselectortable', ExtensionSelectorTable)
