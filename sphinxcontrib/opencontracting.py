@@ -9,7 +9,7 @@ from ocdsextensionregistry import ExtensionRegistry
 
 extensions_url = 'https://raw.githubusercontent.com/open-contracting/extension_registry/master/extensions.csv'
 extension_versions_url = 'https://raw.githubusercontent.com/open-contracting/extension_registry/master/extension_versions.csv'  # noqa
-
+extension_explorer_template = 'https://extensions.open-contracting.org/{}/extensions/{}/{}/'
 
 @lru_cache()
 def get_extension_explorer_extensions_json():
@@ -24,11 +24,10 @@ class ExtensionExplorerLinkList(Directive):
 
         items = []
         extensions = get_extension_explorer_extensions_json()
-        template = 'https://extensions.open-contracting.org/{}/extensions/{}/{}/'
 
         for identifier, version in extension_versions.items():
             reference = nodes.reference('', extensions[identifier]['versions'][version]['metadata']['name'][language],
-                                        refuri=template.format(language, identifier, version))
+                                        refuri=extension_explorer_template.format(language, identifier, version))
             paragraph = nodes.paragraph('', '', reference)
             item = nodes.list_item('', paragraph)
             items.append(item)
@@ -46,6 +45,7 @@ class ExtensionList(Directive):
 
     def run(self):
         extension_versions = self.state.document.settings.env.config.extension_versions
+        language = config.overrides.get('language', 'en')
 
         extension_list_name = self.options.pop('list', '')
         set_classes(self.options)
@@ -92,7 +92,7 @@ class ExtensionList(Directive):
             path_split = pathlib.PurePath(self.state.document.attributes['source']).parts
             root_path = pathlib.PurePath(*[".." for x in range(0, len(path_split) - path_split.index('docs') - 1)])
 
-            link['refuri'] = str(pathlib.PurePath(root_path, 'extensions', extension.id))
+            link['refuri'] = extension_explorer_template.format(language, identifier, version)
             link['translatable'] = True
             link.source = 'extension_list_' + extension_list_name
             link.line = num + 1
