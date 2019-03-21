@@ -26,8 +26,12 @@ class ExtensionExplorerLinkList(Directive):
         extensions = get_extension_explorer_extensions_json()
 
         for identifier, version in extension_versions.items():
-            reference = nodes.reference('', extensions[identifier]['versions'][version]['metadata']['name'][language],
-                                        refuri=extension_explorer_template.format(language, identifier, version))
+            url = extension_explorer_template.format(language, identifier, version)
+            text = extensions[identifier]['versions'][version]['metadata']['name'][language]
+            if version != 'master':
+                text += ' ({})'.format(version)
+
+            reference = nodes.reference('', text, refuri=url)
             paragraph = nodes.paragraph('', '', reference)
             item = nodes.list_item('', paragraph)
             items.append(item)
