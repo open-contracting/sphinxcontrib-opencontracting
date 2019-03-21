@@ -1,4 +1,3 @@
-import pathlib
 from functools import lru_cache
 
 import requests
@@ -10,6 +9,7 @@ from ocdsextensionregistry import ExtensionRegistry
 extensions_url = 'https://raw.githubusercontent.com/open-contracting/extension_registry/master/extensions.csv'
 extension_versions_url = 'https://raw.githubusercontent.com/open-contracting/extension_registry/master/extension_versions.csv'  # noqa
 extension_explorer_template = 'https://extensions.open-contracting.org/{}/extensions/{}/{}/'
+
 
 @lru_cache()
 def get_extension_explorer_extensions_json():
@@ -44,7 +44,8 @@ class ExtensionList(Directive):
                    'list': directives.unchanged}
 
     def run(self):
-        extension_versions = self.state.document.settings.env.config.extension_versions
+        config = self.state.document.settings.env.config
+        extension_versions = config.extension_versions
         language = config.overrides.get('language', 'en')
 
         extension_list_name = self.options.pop('list', '')
@@ -89,9 +90,6 @@ class ExtensionList(Directive):
             some_def, _ = self.state.inline_text(description, self.lineno)
 
             link = nodes.reference(name, '', *some_term)
-            path_split = pathlib.PurePath(self.state.document.attributes['source']).parts
-            root_path = pathlib.PurePath(*[".." for x in range(0, len(path_split) - path_split.index('docs') - 1)])
-
             link['refuri'] = extension_explorer_template.format(language, identifier, version)
             link['translatable'] = True
             link.source = 'extension_list_' + extension_list_name
