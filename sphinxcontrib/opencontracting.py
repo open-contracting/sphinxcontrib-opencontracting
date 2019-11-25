@@ -2,7 +2,7 @@ from functools import lru_cache
 
 import requests
 from docutils import nodes
-from docutils.parsers.rst import directives, Directive
+from docutils.parsers.rst import Directive, directives
 from docutils.parsers.rst.roles import set_classes
 from ocdsextensionregistry import ExtensionRegistry
 
