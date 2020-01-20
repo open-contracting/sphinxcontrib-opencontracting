@@ -1,8 +1,12 @@
+import csv
 from functools import lru_cache
+from io import StringIO
 
+import commonmark
 import requests
 from docutils import nodes
 from docutils.parsers.rst import Directive, directives
+from docutils.parsers.rst.directives.tables import CSVTable
 from docutils.parsers.rst.roles import set_classes
 from ocdsextensionregistry import ExtensionRegistry
 
@@ -14,6 +18,25 @@ extension_explorer_template = 'https://extensions.open-contracting.org/{}/extens
 @lru_cache()
 def get_extension_explorer_extensions_json():
     return requests.get('https://extensions.open-contracting.org/extensions.json').json()
+
+
+class CodelistTable(CSVTable):
+    def get_csv_data(self):
+        csv_data, source = super().get_csv_data()
+        reader = csv.DictReader(csv_data)
+
+        rows = []
+        for row in reader:
+            if 'Description' in row:
+                row['Description'] = commonmark.commonmark(row['Description'], 'rst')
+            rows.append(row)
+
+        io = StringIO()
+        writer = csv.DictWriter(io, reader.fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+
+        return io.getvalue().splitlines(), source
 
 
 class ExtensionExplorerLinkList(Directive):
@@ -127,5 +150,6 @@ class ExtensionList(Directive):
 
 
 def setup(app):
+    app.add_directive('codelisttable', CodelistTable)
     app.add_directive('extensionexplorerlinklist', ExtensionExplorerLinkList)
     app.add_directive('extensionlist', ExtensionList)
