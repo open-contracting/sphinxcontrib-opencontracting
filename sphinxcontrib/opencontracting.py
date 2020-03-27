@@ -1,4 +1,5 @@
 import csv
+import os
 from functools import lru_cache
 from io import StringIO
 
@@ -10,6 +11,7 @@ from docutils.parsers.rst.directives.tables import CSVTable
 from docutils.parsers.rst.roles import set_classes
 from ocdsextensionregistry import ExtensionRegistry
 
+live_branch = os.getenv('TRAVIS_BRANCH') in {'1.0', '1.1', 'latest'}
 extensions_url = 'https://raw.githubusercontent.com/open-contracting/extension_registry/master/extensions.csv'
 extension_versions_url = 'https://raw.githubusercontent.com/open-contracting/extension_registry/master/extension_versions.csv'  # noqa
 extension_explorer_template = 'https://extensions.open-contracting.org/{}/extensions/{}/{}/'
@@ -102,14 +104,22 @@ class ExtensionList(Directive):
         # Only list core extensions whose version matches the version specified in `conf.py` and whose category matches
         # the category specified by the directive's `list` option.
 
-        num = 0
         registry = ExtensionRegistry(extension_versions_url, extensions_url)
+
+        num = 0
         for identifier, version in extension_versions.items():
             extension = registry.get(id=identifier, core=True, version=version)
             if extension_list_name and extension.category != extension_list_name:
                 continue
 
-            metadata = extension.metadata
+            # Avoid "403 Client Error: rate limit exceeded for url" on development branches.
+            try:
+                metadata = extension.metadata
+            except requests.exceptions.HTTPError:
+                if live_branch:
+                    raise
+                metadata = {'name': {'en': identifier}, 'description': {'en': identifier}}
+
             name = metadata['name']['en']
             description = metadata['description']['en']
 
