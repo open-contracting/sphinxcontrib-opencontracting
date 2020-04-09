@@ -11,7 +11,7 @@ from docutils.parsers.rst.directives.tables import CSVTable
 from docutils.parsers.rst.roles import set_classes
 from ocdsextensionregistry import ExtensionRegistry
 
-live_branch = os.getenv('TRAVIS_BRANCH') in {'1.0', '1.1', 'latest'}
+live_branch = os.getenv('TRAVIS_BRANCH', os.getenv('GITHUB_REF', '').rsplit('/', 1)[-1]) in {'1.0', '1.1', 'latest'}
 extensions_url = 'https://raw.githubusercontent.com/open-contracting/extension_registry/master/extensions.csv'
 extension_versions_url = 'https://raw.githubusercontent.com/open-contracting/extension_registry/master/extension_versions.csv'  # noqa
 extension_explorer_template = 'https://extensions.open-contracting.org/{}/extensions/{}/{}/'
