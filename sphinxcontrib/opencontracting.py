@@ -1,4 +1,5 @@
 import csv
+import json
 import os
 from functools import lru_cache
 from io import StringIO
@@ -9,6 +10,7 @@ from docutils import nodes
 from docutils.parsers.rst import Directive, directives
 from docutils.parsers.rst.directives.tables import CSVTable
 from docutils.parsers.rst.roles import set_classes
+from jsonpointer import resolve_pointer
 from ocdsextensionregistry import ExtensionRegistry
 
 live_branch = os.getenv('TRAVIS_BRANCH', os.getenv('GITHUB_REF', '').rsplit('/', 1)[-1]) in {'1.0', '1.1', 'latest'}
@@ -20,6 +22,31 @@ extension_explorer_template = 'https://extensions.open-contracting.org/{}/extens
 @lru_cache()
 def get_extension_explorer_extensions_json():
     return requests.get('https://extensions.open-contracting.org/extensions.json').json()
+
+
+class FieldDescription(Directive):
+    required_arguments = 2
+
+    def run(self):
+        filename = self.arguments[0]
+        pointer = self.arguments[1]
+
+        env = self.state.document.settings.env
+        path = os.path.join(os.path.dirname(env.doc2path(env.docname)), filename)
+        env.note_dependency(path)
+
+        try:
+            with open(path) as f:
+                schema = json.load(f)
+        except FileNotFoundError:
+            raise self.error(f'JSON Schema file not found: {path}')
+        except PermissionError:
+            raise self.error(f'JSON Schema file not readable: {path}')
+
+        description = resolve_pointer(schema, f'{pointer}/description')
+        block_quote = nodes.block_quote('', nodes.paragraph('', description), classes=['directive--field-description'])
+
+        return [block_quote]
 
 
 class CodelistTable(CSVTable):
@@ -160,6 +187,7 @@ class ExtensionList(Directive):
 
 
 def setup(app):
+    app.add_directive('field_description', FieldDescription)
     app.add_directive('codelisttable', CodelistTable)
     app.add_directive('extensionexplorerlinklist', ExtensionExplorerLinkList)
     app.add_directive('extensionlist', ExtensionList)

@@ -7,6 +7,7 @@ setup(
     install_requires=[
         'commonmark',
         'docutils',
+        'jsonpointer',
         'requests',
         'ocdsextensionregistry>=0.0.8',
     ],
