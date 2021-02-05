@@ -94,7 +94,6 @@ class ExtensionExplorerLinkList(Directive):
 class ExtensionList(Directive):
     required_arguments = 1
     final_argument_whitespace = True
-    has_content = True
     option_spec = {'class': directives.class_option,
                    'name': directives.unchanged,
                    'list': directives.unchanged}
