@@ -49,6 +49,31 @@ class FieldDescription(Directive):
         return [block_quote]
 
 
+class CodeDescription(Directive):
+    required_arguments = 2
+
+    def run(self):
+        filename = self.arguments[0]
+        code = self.arguments[1]
+
+        env = self.state.document.settings.env
+        path = os.path.join(os.path.dirname(env.doc2path(env.docname)), filename)
+        env.note_dependency(path)
+
+        try:
+            with open(path) as f:
+                reader = csv.DictReader(f)
+        except FileNotFoundError:
+            raise self.error(f'JSON Schema file not found: {path}')
+        except PermissionError:
+            raise self.error(f'JSON Schema file not readable: {path}')
+
+        description = next(row['Description'] for row in reader if row['Code'] == code)
+        block_quote = nodes.block_quote('', nodes.paragraph('', description), classes=['directive--code-description'])
+
+        return [block_quote]
+
+
 class CodelistTable(CSVTable):
     def get_csv_data(self):
         csv_data, source = super().get_csv_data()
@@ -186,7 +211,8 @@ class ExtensionList(Directive):
 
 
 def setup(app):
-    app.add_directive('field_description', FieldDescription)
+    app.add_directive('field-description', FieldDescription)
+    app.add_directive('code-description', CodeDescription)
     app.add_directive('codelisttable', CodelistTable)
     app.add_directive('extensionexplorerlinklist', ExtensionExplorerLinkList)
     app.add_directive('extensionlist', ExtensionList)
