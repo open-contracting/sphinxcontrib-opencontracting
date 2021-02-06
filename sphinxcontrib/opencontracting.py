@@ -38,12 +38,12 @@ class FieldDescription(Directive):
         try:
             with open(path) as f:
                 schema = json.load(f)
+                description = resolve_pointer(schema, f'{pointer}/description')
         except FileNotFoundError:
             raise self.error(f'JSON Schema file not found: {path}')
         except PermissionError:
             raise self.error(f'JSON Schema file not readable: {path}')
 
-        description = resolve_pointer(schema, f'{pointer}/description')
         block_quote = nodes.block_quote('', nodes.paragraph('', description), classes=['directive--field-description'])
 
         return [block_quote]
@@ -63,12 +63,12 @@ class CodeDescription(Directive):
         try:
             with open(path) as f:
                 reader = csv.DictReader(f)
+                description = next(row['Description'] for row in reader if row['Code'] == code)
         except FileNotFoundError:
-            raise self.error(f'JSON Schema file not found: {path}')
+            raise self.error(f'CSV codelist file not found: {path}')
         except PermissionError:
-            raise self.error(f'JSON Schema file not readable: {path}')
+            raise self.error(f'CSV codelist file not readable: {path}')
 
-        description = next(row['Description'] for row in reader if row['Code'] == code)
         block_quote = nodes.block_quote('', nodes.paragraph('', description), classes=['directive--code-description'])
 
         return [block_quote]
