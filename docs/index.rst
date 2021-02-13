@@ -75,3 +75,26 @@ To render:
 .. codelisttable::
    :header-rows: 1
    :file: codelist.csv
+
+extensionexplorerlinklist
+-------------------------
+
+Add to the ``conf.py`` file:
+
+.. code-block:: python
+
+   extension_versions = {
+       'bids': 'v1.1.5',
+       'lots': 'v1.1.5',
+   }
+
+Use:
+
+.. code-block:: rst
+
+   .. extensionexplorerlinklist::
+
+
+To render:
+
+.. extensionexplorerlinklist::

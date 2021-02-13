@@ -216,3 +216,5 @@ def setup(app):
     app.add_directive('codelisttable', CodelistTable)
     app.add_directive('extensionexplorerlinklist', ExtensionExplorerLinkList)
     app.add_directive('extensionlist', ExtensionList)
+
+    app.add_config_value('extension_versions', {}, True)
