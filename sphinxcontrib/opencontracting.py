@@ -1,3 +1,5 @@
+# coding: utf-8
+
 import csv
 import json
 import os
@@ -41,7 +43,7 @@ class FieldDescription(Directive):
                 schema = json.load(f)
                 description = resolve_pointer(schema, f'{pointer}/description')
         except json.decoder.JSONDecodeError:
-            raise self.error(f'JSON file contains invalid JSON: {path} ({f.read()})')
+            raise self.error(f'JSON file is invalid: {path}')
         except FileNotFoundError:
             raise self.error(f'JSON Schema file not found: {path}')
         except PermissionError:
