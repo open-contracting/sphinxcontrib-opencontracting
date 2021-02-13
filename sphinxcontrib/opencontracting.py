@@ -40,6 +40,8 @@ class FieldDescription(Directive):
             with open(path) as f:
                 schema = json.load(f)
                 description = resolve_pointer(schema, f'{pointer}/description')
+        except json.decoder.JSONDecodeError:
+            raise self.error(f'JSON file contains invalid JSON: {path} ({f.read()})')
         except FileNotFoundError:
             raise self.error(f'JSON Schema file not found: {path}')
         except PermissionError:

@@ -114,11 +114,11 @@ def test_codelisttable_i18n(app, status, warning):
     assert 'build succeeded' in status.getvalue()
     assert warning.getvalue().strip() == ''
 
-    with open(path('codelisttable-i18n', '_build', 'html', 'index.html')) as f:
+    with open(path('codelisttable-i18n', '_build', 'html', 'index.html'), encoding='utf-8') as f:
         element = lxml.html.fromstring(f.read()).xpath('//div[@class="documentwrapper"]')[0]
         actual = lxml.html.tostring(element).decode()
 
-    with open(path('codelisttable-i18n.html')) as f:
+    with open(path('codelisttable-i18n.html'), encoding='utf-8') as f:
         expected = f.read()
 
     assert normalize(actual) == normalize(expected)
