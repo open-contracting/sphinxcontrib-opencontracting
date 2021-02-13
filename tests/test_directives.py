@@ -75,3 +75,20 @@ def test_extensionexplorerlinklist(app, status, warning):
         expected = f.read()
 
     assert normalize(actual) == normalize(expected)
+
+
+@pytest.mark.sphinx(buildername='html', srcdir=path('extensionlist'), freshenv=True)
+def test_extensionlist(app, status, warning):
+    app.build()
+
+    assert 'build succeeded' in status.getvalue()
+    assert warning.getvalue().strip() == ''
+
+    with open(path('extensionlist', '_build', 'html', 'index.html')) as f:
+        element = lxml.html.fromstring(f.read()).xpath('//div[@class="documentwrapper"]')[0]
+        actual = lxml.html.tostring(element).decode()
+
+    with open(path('extensionlist.html')) as f:
+        expected = f.read()
+
+    assert normalize(actual) == normalize(expected)

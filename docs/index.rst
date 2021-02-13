@@ -98,3 +98,28 @@ Use:
 To render:
 
 .. extensionexplorerlinklist::
+
+extensionlist
+-------------
+
+Add to the ``conf.py`` file:
+
+.. code-block:: python
+
+   extension_versions = {
+       'bids': 'v1.1.5',
+       'lots': 'v1.1.5',
+   }
+
+Use:
+
+.. code-block:: rst
+
+   .. extensionlist:: The following extensions are available for the tender section
+      :list: tender
+
+
+To render:
+
+.. extensionlist:: The following extensions are available for the tender section
+   :list: tender
