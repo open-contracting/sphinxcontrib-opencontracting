@@ -12,9 +12,10 @@ def normalize(string):
 @pytest.mark.sphinx(buildername='html', srcdir=path('field-description'), freshenv=True)
 def test_field_description(app, status, warning):
     app.build()
+    message = f"WARNING: JSON Schema file not found: {path('field-description', 'nonexistent.json')}"
 
     assert 'build succeeded' in status.getvalue()
-    assert warning.getvalue().strip() == ''
+    assert message in warning.getvalue().strip()
 
     with open(path('field-description', '_build', 'html', 'index.html')) as f:
         element = lxml.html.fromstring(f.read()).xpath('//div[@class="documentwrapper"]')[0]
@@ -29,9 +30,10 @@ def test_field_description(app, status, warning):
 @pytest.mark.sphinx(buildername='html', srcdir=path('code-description'), freshenv=True)
 def test_code_description(app, status, warning):
     app.build()
+    message = f"WARNING: CSV codelist file not found: {path('code-description', 'nonexistent.csv')}"
 
     assert 'build succeeded' in status.getvalue()
-    assert warning.getvalue().strip() == ''
+    assert message in warning.getvalue().strip()
 
     with open(path('code-description', '_build', 'html', 'index.html')) as f:
         element = lxml.html.fromstring(f.read()).xpath('//div[@class="documentwrapper"]')[0]
@@ -80,9 +82,10 @@ def test_extensionexplorerlinklist(app, status, warning):
 @pytest.mark.sphinx(buildername='html', srcdir=path('extensionlist'), freshenv=True)
 def test_extensionlist(app, status, warning):
     app.build()
+    message = 'WARNING: No extensions have category nonexistent in extensionlist directive'
 
     assert 'build succeeded' in status.getvalue()
-    assert warning.getvalue().strip() == ''
+    assert message in warning.getvalue().strip()
 
     with open(path('extensionlist', '_build', 'html', 'index.html')) as f:
         element = lxml.html.fromstring(f.read()).xpath('//div[@class="documentwrapper"]')[0]
