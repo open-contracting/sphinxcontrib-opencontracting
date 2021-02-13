@@ -1,4 +1,3 @@
-import os
 import re
 from contextlib import contextmanager
 from pathlib import Path
@@ -35,7 +34,7 @@ def test_field_description(app, status, warning):
 
         assert 'build succeeded' in status.getvalue()
         assert not_found in warnings
-        assert not_readable in warnings
+        assert not_readable in warnings or os.name != 'nt'
 
         with open(path('field-description', '_build', 'html', 'index.html')) as f:
             element = lxml.html.fromstring(f.read()).xpath('//div[@class="documentwrapper"]')[0]
@@ -58,7 +57,7 @@ def test_code_description(app, status, warning):
 
         assert 'build succeeded' in status.getvalue()
         assert not_found in warnings
-        assert not_readable in warnings
+        assert not_readable in warnings or os.name != 'nt'
 
         with open(path('code-description', '_build', 'html', 'index.html')) as f:
             element = lxml.html.fromstring(f.read()).xpath('//div[@class="documentwrapper"]')[0]
@@ -68,6 +67,24 @@ def test_code_description(app, status, warning):
             expected = f.read()
 
         assert normalize(actual) == normalize(expected)
+
+
+@pytest.mark.sphinx(buildername='html', srcdir=path('code-description-i18n'), freshenv=True,
+                    confoverrides={'language': 'es'})
+def test_code_description_i18n(app, status, warning):
+    app.build()
+
+    assert 'build succeeded' in status.getvalue()
+    assert warning.getvalue().strip() == ''
+
+    with open(path('code-description-i18n', '_build', 'html', 'index.html')) as f:
+        element = lxml.html.fromstring(f.read()).xpath('//div[@class="documentwrapper"]')[0]
+        actual = lxml.html.tostring(element).decode()
+
+    with open(path('code-description-i18n.html')) as f:
+        expected = f.read()
+
+    assert normalize(actual) == normalize(expected)
 
 
 @pytest.mark.sphinx(buildername='html', srcdir=path('codelisttable'), freshenv=True)
@@ -82,6 +99,24 @@ def test_codelisttable(app, status, warning):
         actual = lxml.html.tostring(element).decode()
 
     with open(path('codelisttable.html')) as f:
+        expected = f.read()
+
+    assert normalize(actual) == normalize(expected)
+
+
+@pytest.mark.sphinx(buildername='html', srcdir=path('codelisttable-i18n'), freshenv=True,
+                    confoverrides={'language': 'es'})
+def test_codelisttable_i18n(app, status, warning):
+    app.build()
+
+    assert 'build succeeded' in status.getvalue()
+    assert warning.getvalue().strip() == ''
+
+    with open(path('codelisttable-i18n', '_build', 'html', 'index.html')) as f:
+        element = lxml.html.fromstring(f.read()).xpath('//div[@class="documentwrapper"]')[0]
+        actual = lxml.html.tostring(element).decode()
+
+    with open(path('codelisttable-i18n.html')) as f:
         expected = f.read()
 
     assert normalize(actual) == normalize(expected)

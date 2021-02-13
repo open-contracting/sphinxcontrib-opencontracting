@@ -44,7 +44,8 @@ class FieldDescription(Directive):
         except PermissionError:
             raise self.error(f'JSON Schema file not readable: {path}')
 
-        block_quote = nodes.block_quote('', nodes.paragraph('', description), classes=['directive--field-description'])
+        paragraph = nodes.paragraph('', description)
+        block_quote = nodes.block_quote('', paragraph, classes=['directive--field-description'])
 
         return [block_quote]
 
@@ -53,6 +54,10 @@ class CodeDescription(Directive):
     required_arguments = 2
 
     def run(self):
+        config = self.state.document.settings.env.config
+        language = config.overrides.get('language', 'en')
+        headers = config.codelist_headers[language]
+
         filename = self.arguments[0]
         code = self.arguments[1]
 
@@ -63,26 +68,31 @@ class CodeDescription(Directive):
         try:
             with open(path) as f:
                 reader = csv.DictReader(f)
-                description = next(row['Description'] for row in reader if row['Code'] == code)
+                description = next(row[headers['description']] for row in reader if row[headers['code']] == code)
         except FileNotFoundError:
             raise self.error(f'CSV codelist file not found: {path}')
         except PermissionError:
             raise self.error(f'CSV codelist file not readable: {path}')
 
-        block_quote = nodes.block_quote('', nodes.paragraph('', description), classes=['directive--code-description'])
+        paragraph = nodes.paragraph('', description)
+        block_quote = nodes.block_quote('', paragraph, classes=['directive--code-description'])
 
         return [block_quote]
 
 
 class CodelistTable(CSVTable):
     def get_csv_data(self):
+        config = self.state.document.settings.env.config
+        language = config.overrides.get('language', 'en')
+        header = config.codelist_headers[language]['description']
+
         csv_data, source = super().get_csv_data()
         reader = csv.DictReader(csv_data)
 
         rows = []
         for row in reader:
-            if 'Description' in row:
-                row['Description'] = commonmark.commonmark(row['Description'], 'rst')
+            if header in row:
+                row[header] = commonmark.commonmark(row[header], 'rst')
             rows.append(row)
 
         io = StringIO()
@@ -218,3 +228,9 @@ def setup(app):
     app.add_directive('extensionlist', ExtensionList)
 
     app.add_config_value('extension_versions', {}, True)
+    app.add_config_value('codelist_headers', {
+        'en': {'code': 'Code', 'description': 'Description'},
+        'es': {'code': 'Código', 'description': 'Descripción'},
+        'fr': {'code': 'Code', 'description': 'Description'},
+        'it': {'code': 'Codice', 'description': 'Descrizione'},
+    }, True)
