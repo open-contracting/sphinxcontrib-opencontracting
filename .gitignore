@@ -1,1 +1,5 @@
 /*.egg-info
+/.coverage
+/dist
+/htmlcov
+_build
