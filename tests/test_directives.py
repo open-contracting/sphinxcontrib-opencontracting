@@ -1,4 +1,3 @@
-import os
 import re
 from contextlib import contextmanager
 from pathlib import Path
@@ -31,12 +30,16 @@ def test_field_description(app, status, warning):
         app.build()
         warnings = warning.getvalue().strip()
 
-        not_found = f"WARNING: JSON Schema file not found: {path('field-description', 'nonexistent.json')}"
-        not_readable = f"WARNING: JSON Schema file not readable: {path('field-description', 'nonreadable.json')}"
+        messages = [
+            f"WARNING: JSON Schema file not found: {path('field-description', 'nonexistent.json')}",
+            f"WARNING: JSON Schema file not readable: {path('field-description', 'nonreadable.json')}",
+            f"WARNING: JSON Schema file not valid: {path('field-description', 'invalid.json')}",
+            f"WARNING: Pointer '/properties/nonexistent/description' not found: {path('field-description', 'schema.json')}",  # noqa: E501
+        ]
 
         assert 'build succeeded' in status.getvalue()
-        assert not_found in warnings
-        assert not_readable in warnings or os.name != 'nt'
+        for message in messages:
+            assert message in warnings
 
         with open(path('field-description', '_build', 'html', 'index.html')) as f:
             element = lxml.html.fromstring(f.read()).xpath('//div[@class="documentwrapper"]')[0]
@@ -54,12 +57,15 @@ def test_code_description(app, status, warning):
         app.build()
         warnings = warning.getvalue().strip()
 
-        not_found = f"WARNING: CSV codelist file not found: {path('code-description', 'nonexistent.csv')}"
-        not_readable = f"WARNING: CSV codelist file not readable: {path('code-description', 'nonreadable.csv')}"
+        messages = [
+            f"WARNING: CSV codelist file not found: {path('code-description', 'nonexistent.csv')}",
+            f"WARNING: CSV codelist file not readable: {path('code-description', 'nonreadable.csv')}",
+            f"WARNING: Value 'nonexistent' not found in column 'Code': {path('code-description', 'codelist.csv')}",
+        ]
 
         assert 'build succeeded' in status.getvalue()
-        assert not_found in warnings
-        assert not_readable in warnings or os.name != 'nt'
+        for message in messages:
+            assert message in warnings
 
         with open(path('code-description', '_build', 'html', 'index.html')) as f:
             element = lxml.html.fromstring(f.read()).xpath('//div[@class="documentwrapper"]')[0]

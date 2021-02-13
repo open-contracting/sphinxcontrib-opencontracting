@@ -7,12 +7,12 @@ from functools import lru_cache
 from io import StringIO
 
 import commonmark
+import jsonpointer
 import requests
 from docutils import nodes
 from docutils.parsers.rst import Directive, directives
 from docutils.parsers.rst.directives.tables import CSVTable
 from docutils.parsers.rst.roles import set_classes
-from jsonpointer import resolve_pointer
 from myst_parser.main import to_docutils
 from ocdsextensionregistry import ExtensionRegistry
 
@@ -41,13 +41,15 @@ class FieldDescription(Directive):
         try:
             with open(path) as f:
                 schema = json.load(f)
-                description = resolve_pointer(schema, f'{pointer}/description')
-        except json.decoder.JSONDecodeError:
-            raise self.error(f'JSON file is invalid: {path}')
+                description = jsonpointer.resolve_pointer(schema, f'{pointer}/description')
         except FileNotFoundError:
             raise self.error(f'JSON Schema file not found: {path}')
         except PermissionError:
             raise self.error(f'JSON Schema file not readable: {path}')
+        except json.decoder.JSONDecodeError:
+            raise self.error(f'JSON Schema file not valid: {path}')
+        except jsonpointer.JsonPointerException:
+            raise self.error(f"Pointer '{pointer}/description' not found: {path}")
 
         block_quote = nodes.block_quote('', *to_docutils(description).children,
                                         classes=['directive--field-description'])
@@ -78,6 +80,8 @@ class CodeDescription(Directive):
             raise self.error(f'CSV codelist file not found: {path}')
         except PermissionError:
             raise self.error(f'CSV codelist file not readable: {path}')
+        except StopIteration:
+            raise self.error(f"Value '{code}' not found in column '{headers['code']}': {path}")
 
         block_quote = nodes.block_quote('', *to_docutils(description).children,
                                         classes=['directive--code-description'])
