@@ -1,7 +1,7 @@
 {
   "properties": {
     "field": {
-      "description": "A description"
+      "description": "A **description**"
     }
   }
 }

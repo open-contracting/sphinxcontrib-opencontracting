@@ -8,6 +8,7 @@ setup(
         'commonmark',
         'docutils',
         'jsonpointer',
+        'MyST-Parser',
         'requests',
         'ocdsextensionregistry>=0.0.8',
     ],

@@ -4,13 +4,14 @@ import os
 from functools import lru_cache
 from io import StringIO
 
-import commonmark
 import requests
+import commonmark
 from docutils import nodes
 from docutils.parsers.rst import Directive, directives
 from docutils.parsers.rst.directives.tables import CSVTable
 from docutils.parsers.rst.roles import set_classes
 from jsonpointer import resolve_pointer
+from myst_parser.main import to_docutils
 from ocdsextensionregistry import ExtensionRegistry
 
 live_branch = os.getenv('TRAVIS_BRANCH', os.getenv('GITHUB_REF', '').rsplit('/', 1)[-1]) in {'1.0', '1.1', 'latest'}
@@ -44,8 +45,8 @@ class FieldDescription(Directive):
         except PermissionError:
             raise self.error(f'JSON Schema file not readable: {path}')
 
-        paragraph = nodes.paragraph('', description)
-        block_quote = nodes.block_quote('', paragraph, classes=['directive--field-description'])
+        block_quote = nodes.block_quote('', *to_docutils(description).children,
+                                        classes=['directive--field-description'])
 
         return [block_quote]
 
@@ -74,8 +75,8 @@ class CodeDescription(Directive):
         except PermissionError:
             raise self.error(f'CSV codelist file not readable: {path}')
 
-        paragraph = nodes.paragraph('', description)
-        block_quote = nodes.block_quote('', paragraph, classes=['directive--code-description'])
+        block_quote = nodes.block_quote('', *to_docutils(description).children,
+                                        classes=['directive--code-description'])
 
         return [block_quote]
 
