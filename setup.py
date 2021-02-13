@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='sphinxcontrib-opencontracting',
-    version='0.0.0',
+    version='0.0.1',
     packages=['sphinxcontrib'],
     install_requires=[
         'commonmark',
