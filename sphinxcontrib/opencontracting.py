@@ -4,8 +4,8 @@ import os
 from functools import lru_cache
 from io import StringIO
 
-import requests
 import commonmark
+import requests
 from docutils import nodes
 from docutils.parsers.rst import Directive, directives
 from docutils.parsers.rst.directives.tables import CSVTable
