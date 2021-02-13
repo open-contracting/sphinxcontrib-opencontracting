@@ -21,6 +21,7 @@ def nonreadable(filename):
     try:
         yield
     finally:
+        file.chmod(700)
         file.unlink()
 
 
