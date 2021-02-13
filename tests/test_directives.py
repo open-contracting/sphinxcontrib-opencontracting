@@ -1,48 +1,73 @@
+import os
 import re
+from contextlib import contextmanager
+from pathlib import Path
 
 import lxml.html
 import pytest
 
 from tests import path
 
+
 def normalize(string):
     return re.sub(r'\n *', '', string)
 
 
+@contextmanager
+def nonreadable(filename):
+    file = Path(filename)
+    file.touch()
+    file.chmod(0)
+    try:
+        yield
+    finally:
+        file.unlink()
+
+
 @pytest.mark.sphinx(buildername='html', srcdir=path('field-description'), freshenv=True)
 def test_field_description(app, status, warning):
-    app.build()
-    message = f"WARNING: JSON Schema file not found: {path('field-description', 'nonexistent.json')}"
+    with nonreadable(path('field-description', 'nonreadable.json')):
+        app.build()
+        warnings = warning.getvalue().strip()
 
-    assert 'build succeeded' in status.getvalue()
-    assert message in warning.getvalue().strip()
+        not_found = f"WARNING: JSON Schema file not found: {path('field-description', 'nonexistent.json')}"
+        not_readable = f"WARNING: JSON Schema file not readable: {path('field-description', 'nonreadable.json')}"
 
-    with open(path('field-description', '_build', 'html', 'index.html')) as f:
-        element = lxml.html.fromstring(f.read()).xpath('//div[@class="documentwrapper"]')[0]
-        actual = lxml.html.tostring(element).decode()
+        assert 'build succeeded' in status.getvalue()
+        assert not_found in warnings
+        assert not_readable in warnings
 
-    with open(path('field-description.html')) as f:
-        expected = f.read()
+        with open(path('field-description', '_build', 'html', 'index.html')) as f:
+            element = lxml.html.fromstring(f.read()).xpath('//div[@class="documentwrapper"]')[0]
+            actual = lxml.html.tostring(element).decode()
 
-    assert normalize(actual) == normalize(expected)
+        with open(path('field-description.html')) as f:
+            expected = f.read()
+
+        assert normalize(actual) == normalize(expected)
 
 
 @pytest.mark.sphinx(buildername='html', srcdir=path('code-description'), freshenv=True)
 def test_code_description(app, status, warning):
-    app.build()
-    message = f"WARNING: CSV codelist file not found: {path('code-description', 'nonexistent.csv')}"
+    with nonreadable(path('code-description', 'nonreadable.csv')):
+        app.build()
+        warnings = warning.getvalue().strip()
 
-    assert 'build succeeded' in status.getvalue()
-    assert message in warning.getvalue().strip()
+        not_found = f"WARNING: CSV codelist file not found: {path('code-description', 'nonexistent.csv')}"
+        not_readable = f"WARNING: CSV codelist file not readable: {path('code-description', 'nonreadable.csv')}"
 
-    with open(path('code-description', '_build', 'html', 'index.html')) as f:
-        element = lxml.html.fromstring(f.read()).xpath('//div[@class="documentwrapper"]')[0]
-        actual = lxml.html.tostring(element).decode()
+        assert 'build succeeded' in status.getvalue()
+        assert not_found in warnings
+        assert not_readable in warnings
 
-    with open(path('code-description.html')) as f:
-        expected = f.read()
+        with open(path('code-description', '_build', 'html', 'index.html')) as f:
+            element = lxml.html.fromstring(f.read()).xpath('//div[@class="documentwrapper"]')[0]
+            actual = lxml.html.tostring(element).decode()
 
-    assert normalize(actual) == normalize(expected)
+        with open(path('code-description.html')) as f:
+            expected = f.read()
+
+        assert normalize(actual) == normalize(expected)
 
 
 @pytest.mark.sphinx(buildername='html', srcdir=path('codelisttable'), freshenv=True)
