@@ -80,6 +80,8 @@ class CodeDescription(Directive):
             raise self.error(f'CSV codelist file not found: {path}')
         except PermissionError:
             raise self.error(f'CSV codelist file not readable: {path}')
+        except KeyError as e:
+            raise self.error(f"Column {e} not found ({', '.join(reader.fieldnames)}): {path}")
         except StopIteration:
             raise self.error(f"Value '{code}' not found in column '{headers['code']}': {path}")
 
