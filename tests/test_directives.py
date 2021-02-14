@@ -21,7 +21,7 @@ def assert_build(app, status, warning, basename, messages=None):
         element = lxml.html.fromstring(f.read()).xpath('//div[@class="documentwrapper"]')[0]
         actual = lxml.html.tostring(element).decode()
 
-    with open(path(f'{basename}.html')) as f:
+    with open(path(f'{basename}.html'), encoding='utf-8') as f:
         expected = f.read()
 
     assert 'build succeeded' in status.getvalue()

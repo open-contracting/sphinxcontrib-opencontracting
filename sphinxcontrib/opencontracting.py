@@ -37,7 +37,7 @@ class FieldDescription(Directive):
         env.note_dependency(path)
 
         try:
-            with open(path) as f:
+            with open(path, encoding='utf-8') as f:
                 schema = json.load(f)
                 description = jsonpointer.resolve_pointer(schema, f'{pointer}/description')
         except FileNotFoundError:
@@ -74,7 +74,7 @@ class CodeDescription(Directive):
         env.note_dependency(path)
 
         try:
-            with open(path) as f:
+            with open(path, encoding='utf-8') as f:
                 reader = csv.DictReader(f)
                 description = next(row[headers['description']] for row in reader if row[headers['code']] == code)
         except FileNotFoundError:
