@@ -17,7 +17,7 @@ def assert_build(app, status, warning, basename, messages=None):
     app.build()
     warnings = warning.getvalue().strip()
 
-    with open(path(basename, '_build', 'html', 'index.html')) as f:
+    with open(path(basename, '_build', 'html', 'index.html'), encoding='utf-8') as f:
         element = lxml.html.fromstring(f.read()).xpath('//div[@class="documentwrapper"]')[0]
         actual = lxml.html.tostring(element).decode()
 
@@ -29,6 +29,7 @@ def assert_build(app, status, warning, basename, messages=None):
     if messages:
         for message in messages:
             assert message in warnings
+        assert len(messages) == len(warnings.split('\n'))
     else:
         assert warnings == ''
 
@@ -102,10 +103,10 @@ def test_i18n(app, status, warning):
     assert_build(app, status, warning, 'i18n')
 
 
-@pytest.mark.sphinx(buildername='html', srcdir=path('missing-language'), freshenv=True,
+@pytest.mark.sphinx(buildername='html', srcdir=path('i18n-missing-language'), freshenv=True,
                     confoverrides={'language': 'de'})
-def test_missing_language(app, status, warning):
-    assert_build(app, status, warning, 'missing-language', [
+def test_i18n_missing_language(app, status, warning):
+    assert_build(app, status, warning, 'i18n-missing-language', [
         "codelist_headers in conf.py is missing a 'de' key",
         "markdown_headers in conf.py is missing a 'de' key",
     ])
