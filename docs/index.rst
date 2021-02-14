@@ -3,11 +3,6 @@ sphinxcontrib-opencontracting |release|
 
 .. include:: ../README.rst
 
-.. toctree::
-   :caption: Contents
-
-   changelog
-
 field-description
 -----------------
 
@@ -128,5 +123,10 @@ To render:
 
 .. extensionlist:: The following extensions are available for the tender section
    :list: tender
+
+.. toctree::
+   :caption: Contents
+
+   changelog
 
 Copyright (c) 2020 Open Contracting Partnership, released under the BSD license
