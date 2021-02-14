@@ -67,52 +67,9 @@ def test_code_description(app, status, warning):
     ])
 
 
-@pytest.mark.skipif(os.name == 'nt', reason='Windows')
-@pytest.mark.sphinx(buildername='html', srcdir=path('basic'), freshenv=True)
-def test_field_description_nonreadable(app, status, warning):
-    basename = 'basic'
-
-    with nonreadable(path(basename, 'nonreadable.json')):
-        assert_build(app, status, warning, basename, [
-            f"WARNING: JSON Schema file not readable: {path(basename, 'nonreadable.json')}"
-        ])
-
-
-@pytest.mark.skipif(os.name == 'nt', reason='Windows')
-@pytest.mark.sphinx(buildername='html', srcdir=path('basic'), freshenv=True)
-def test_code_description_nonreadable(app, status, warning):
-    basename = 'basic'
-
-    with nonreadable(path(basename, 'nonreadable.csv')):
-        assert_build(app, status, warning, basename, [
-            f"WARNING: CSV codelist file not readable: {path(basename, 'nonreadable.csv')}"
-        ])
-
-
-@pytest.mark.sphinx(buildername='html', srcdir=path('code-description-i18n'), freshenv=True,
-                    confoverrides={'language': 'es'})
-def test_code_description_i18n(app, status, warning):
-    assert_build(app, status, warning, 'code-description-i18n')
-
-
-@pytest.mark.sphinx(buildername='html', srcdir=path('code-description-column'), freshenv=True)
-def test_code_description_column(app, status, warning):
-    basename = 'code-description-column'
-
-    assert_build(app, status, warning, basename, [
-        f"Column 'non-code' not found (Code, Description): {path(basename, 'codelist.csv')}"
-    ])
-
-
 @pytest.mark.sphinx(buildername='html', srcdir=path('codelisttable'), freshenv=True)
 def test_codelisttable(app, status, warning):
     assert_build(app, status, warning, 'codelisttable')
-
-
-@pytest.mark.sphinx(buildername='html', srcdir=path('codelisttable-i18n'), freshenv=True,
-                    confoverrides={'language': 'es'})
-def test_codelisttable_i18n(app, status, warning):
-    assert_build(app, status, warning, 'codelisttable-i18n')
 
 
 @pytest.mark.sphinx(buildername='html', srcdir=path('extensionexplorerlinklist'), freshenv=True)
@@ -124,4 +81,40 @@ def test_extensionexplorerlinklist(app, status, warning):
 def test_extensionlist(app, status, warning):
     assert_build(app, status, warning, 'extensionlist', [
         'WARNING: No extensions have category nonexistent in extensionlist directive',
+    ])
+
+
+@pytest.mark.skipif(os.name == 'nt', reason='Windows')
+@pytest.mark.sphinx(buildername='html', srcdir=path('nonreadable'), freshenv=True)
+def test_nonreadable(app, status, warning):
+    basename = 'nonreadable'
+
+    with nonreadable(path(basename, 'nonreadable.json')), nonreadable(path(basename, 'nonreadable.csv')):
+        assert_build(app, status, warning, basename, [
+            f"WARNING: JSON Schema file not readable: {path(basename, 'nonreadable.json')}",
+            f"WARNING: CSV codelist file not readable: {path(basename, 'nonreadable.csv')}",
+        ])
+
+
+@pytest.mark.sphinx(buildername='html', srcdir=path('i18n'), freshenv=True,
+                    confoverrides={'language': 'es'})
+def test_i18n(app, status, warning):
+    assert_build(app, status, warning, 'i18n')
+
+
+@pytest.mark.sphinx(buildername='html', srcdir=path('missing-language'), freshenv=True,
+                    confoverrides={'language': 'de'})
+def test_missing_language(app, status, warning):
+    assert_build(app, status, warning, 'missing-language', [
+        "codelist_headers in conf.py is missing a 'de' key",
+        "markdown_headers in conf.py is missing a 'de' key",
+    ])
+
+
+@pytest.mark.sphinx(buildername='html', srcdir=path('code-description-missing-column'), freshenv=True)
+def test_code_description_missing_column(app, status, warning):
+    basename = 'code-description-missing-column'
+
+    assert_build(app, status, warning, basename, [
+        f"Column 'non-code' not found (Code, Description): {path(basename, 'codelist.csv')}",
     ])
