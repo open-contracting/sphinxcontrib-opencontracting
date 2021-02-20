@@ -15,8 +15,8 @@ from myst_parser.main import to_docutils
 from ocdsextensionregistry import ExtensionRegistry
 
 live_branch = os.getenv('TRAVIS_BRANCH', os.getenv('GITHUB_REF', '').rsplit('/', 1)[-1]) in {'1.0', '1.1', 'latest'}
-extensions_url = 'https://raw.githubusercontent.com/open-contracting/extension_registry/master/extensions.csv'
-extension_versions_url = 'https://raw.githubusercontent.com/open-contracting/extension_registry/master/extension_versions.csv'  # noqa: E501
+extensions_url = 'https://raw.githubusercontent.com/open-contracting/extension_registry/main/extensions.csv'
+extension_versions_url = 'https://raw.githubusercontent.com/open-contracting/extension_registry/main/extension_versions.csv'  # noqa: E501
 extension_explorer_template = 'https://extensions.open-contracting.org/{}/extensions/{}/{}/'
 
 
