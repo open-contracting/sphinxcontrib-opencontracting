@@ -25,4 +25,4 @@ jobs:
     - run: pytest -vv --cov sphinxcontrib
     - env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: coveralls
+      run: coveralls --service=github
