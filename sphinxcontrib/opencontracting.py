@@ -2,14 +2,11 @@ import csv
 import json
 import os
 from functools import lru_cache
-from io import StringIO
 
-import commonmark
 import jsonpointer
 import requests
 from docutils import nodes
 from docutils.parsers.rst import Directive, directives
-from docutils.parsers.rst.directives.tables import CSVTable
 from docutils.parsers.rst.roles import set_classes
 from myst_parser.main import to_docutils
 from ocdsextensionregistry import ExtensionRegistry

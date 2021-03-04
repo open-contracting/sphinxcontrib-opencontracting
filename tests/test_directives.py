@@ -103,7 +103,6 @@ def test_i18n(app, status, warning):
 def test_i18n_missing_language(app, status, warning):
     assert_build(app, status, warning, 'i18n-missing-language', [
         "codelist_headers in conf.py is missing a 'de' key",
-        "markdown_headers in conf.py is missing a 'de' key",
     ])
 
 

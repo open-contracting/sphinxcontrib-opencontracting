@@ -15,7 +15,6 @@ setup(
     namespace_packages=['sphinxcontrib'],
     long_description=long_description,
     install_requires=[
-        'commonmark',
         'docutils',
         'jsonpointer',
         'MyST-Parser',
