@@ -68,11 +68,6 @@ def test_code_description(app, status, warning):
     ])
 
 
-@pytest.mark.sphinx(buildername='html', srcdir=path('codelisttable'), freshenv=True)
-def test_codelisttable(app, status, warning):
-    assert_build(app, status, warning, 'codelisttable')
-
-
 @pytest.mark.sphinx(buildername='html', srcdir=path('extensionexplorerlinklist'), freshenv=True)
 def test_extensionexplorerlinklist(app, status, warning):
     assert_build(app, status, warning, 'extensionexplorerlinklist')

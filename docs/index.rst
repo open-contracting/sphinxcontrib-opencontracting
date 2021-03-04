@@ -50,32 +50,6 @@ To render:
 
 .. code-description:: codelist.csv a
 
-codelisttable
--------------
-
-With a ``codelist.csv`` file like:
-
-.. code-block:: none
-
-   Code,Title,Description
-   a,A,A description
-   b,B,B description
-
-Use:
-
-.. code-block:: rst
-
-   .. codelisttable::
-      :header-rows: 1
-      :file: codelist.csv
-
-
-To render:
-
-.. codelisttable::
-   :header-rows: 1
-   :file: codelist.csv
-
 extensionexplorerlinklist
 -------------------------
 

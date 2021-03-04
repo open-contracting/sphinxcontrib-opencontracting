@@ -92,33 +92,6 @@ class CodeDescription(Directive):
         return [block_quote]
 
 
-class CodelistTable(CSVTable):
-    def get_csv_data(self):
-        config = self.state.document.settings.env.config
-        language = config.overrides.get('language', 'en')
-        try:
-            headers = config.markdown_headers[language]
-        except KeyError:
-            raise self.error(f"markdown_headers in conf.py is missing a '{language}' key")
-
-        csv_data, source = super().get_csv_data()
-        reader = csv.DictReader(csv_data)
-
-        rows = []
-        for row in reader:
-            for header in headers:
-                if header in row:
-                    row[header] = commonmark.commonmark(row[header], 'rst')
-            rows.append(row)
-
-        io = StringIO()
-        writer = csv.DictWriter(io, reader.fieldnames)
-        writer.writeheader()
-        writer.writerows(rows)
-
-        return io.getvalue().splitlines(), source
-
-
 class ExtensionExplorerLinkList(Directive):
     def run(self):
         config = self.state.document.settings.env.config
@@ -239,17 +212,10 @@ class ExtensionList(Directive):
 def setup(app):
     app.add_directive('field-description', FieldDescription)
     app.add_directive('code-description', CodeDescription)
-    app.add_directive('codelisttable', CodelistTable)
     app.add_directive('extensionexplorerlinklist', ExtensionExplorerLinkList)
     app.add_directive('extensionlist', ExtensionList)
 
     app.add_config_value('extension_versions', {}, True)
-    app.add_config_value('markdown_headers', {
-        'en': ['Description'],
-        'es': ['Descripción'],
-        'fr': ['Description'],
-        'it': ['Descrizione'],
-    }, True)
     app.add_config_value('codelist_headers', {
         'en': {'code': 'Code', 'description': 'Description'},
         'es': {'code': 'Código', 'description': 'Descripción'},
