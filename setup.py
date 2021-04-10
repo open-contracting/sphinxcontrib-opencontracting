@@ -5,7 +5,7 @@ with open('README.rst') as f:
 
 setup(
     name='sphinxcontrib-opencontracting',
-    version='0.0.1',
+    version='0.0.2',
     author='Open Contracting Partnership',
     author_email='data@open-contracting.org',
     url='https://github.com/open-contracting/sphinxcontrib-opencontracting',
@@ -14,6 +14,7 @@ setup(
     packages=find_packages(exclude=['tests', 'tests.*']),
     namespace_packages=['sphinxcontrib'],
     long_description=long_description,
+    long_description_content_type='text/x-rst',
     install_requires=[
         'docutils',
         'jsonpointer',

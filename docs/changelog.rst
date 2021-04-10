@@ -1,8 +1,13 @@
 Changelog
 =========
 
-Unreleased
-----------
+0.0.2 (2021-04-10)
+------------------
+
+Added
+~~~~~
+
+-  Add Python wheels distribution.
 
 Changed
 ~~~~~~~
