@@ -14,7 +14,7 @@ Then, add to the ``conf.py`` file:
 
    extensions = ['sphinxcontrib.opencontracting']
 
-If you are viewing this on GitHub or PyPi, open the `full documentation <https://sphinxcontrib-opencontracting.readthedocs.io/>`__ for additional details.
+If you are viewing this on GitHub or PyPI, open the `full documentation <https://sphinxcontrib-opencontracting.readthedocs.io/>`__ for additional details.
 
 .. |PyPI Version| image:: https://img.shields.io/pypi/v/sphinxcontrib-opencontracting.svg
    :target: https://pypi.org/project/sphinxcontrib-opencontracting/
