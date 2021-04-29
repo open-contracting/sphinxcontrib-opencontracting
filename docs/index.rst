@@ -3,6 +3,8 @@ sphinxcontrib-opencontracting |release|
 
 .. include:: ../README.rst
 
+.. _field-description:
+
 field-description
 -----------------
 
@@ -29,6 +31,8 @@ To render:
 
 .. field-description:: schema.json /properties/field
 
+.. _code-description:
+
 code-description
 -----------------
 
@@ -49,6 +53,8 @@ Use:
 To render:
 
 .. code-description:: codelist.csv a
+
+.. _extensionexplorerlinklist:
 
 extensionexplorerlinklist
 -------------------------
@@ -72,6 +78,8 @@ Use:
 To render:
 
 .. extensionexplorerlinklist::
+
+.. _extensionlist:
 
 extensionlist
 -------------
