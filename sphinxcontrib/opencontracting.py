@@ -99,8 +99,13 @@ class ExtensionExplorerLinkList(Directive):
         extensions = get_extension_explorer_extensions_json()
 
         for identifier, version in extension_versions.items():
+            name = extensions[identifier]['versions'][version]['metadata']['name']
+            if language not in name:
+                language = 'en'
+
             url = extension_explorer_template.format(language, identifier, version)
-            text = extensions[identifier]['versions'][version]['metadata']['name'][language]
+
+            text = name[language]
             if version != 'master':
                 text += ' ({})'.format(version)
 
