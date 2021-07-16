@@ -24,6 +24,10 @@ jobs:
             ${{ runner.os }}-pip-
       - if: matrix.os == 'ubuntu-latest' && matrix.python-version == 'pypy-3.7'
         run: sudo apt install libxml2-dev libxslt-dev
+      - if: matrix.os == 'windows-latest' && matrix.python-version == 'pypy-3.7'
+        uses: msys2/setup-msys2@v2
+        with:
+          install: mingw-w64-x86_64-libxml2
       - run: pip install .[test]
       - run: pytest -vv --cov sphinxcontrib
       - env:
