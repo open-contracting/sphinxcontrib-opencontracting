@@ -8,6 +8,10 @@ jobs:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
         python-version: [3.6, 3.7, 3.8, 3.9, pypy-3.7]
+        exclude:
+          # https://www.lfd.uci.edu/~gohlke/pythonlibs/ has no permalinks.
+          - os: windows-latest
+            python-version: pypy-3.7
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -24,9 +28,6 @@ jobs:
             ${{ runner.os }}-pip-
       - if: matrix.os == 'ubuntu-latest' && matrix.python-version == 'pypy-3.7'
         run: sudo apt install libxml2-dev libxslt-dev
-      # https://www.lfd.uci.edu/~gohlke/pythonlibs/
-      - if: matrix.os == 'windows-latest' && matrix.python-version == 'pypy-3.7'
-        run: pip install https://download.lfd.uci.edu/pythonlibs/r4tycu3t/lxml-4.6.3-pp37-pypy37_pp73-win_amd64.whl
       - run: pip install .[test]
       - run: pytest -vv --cov sphinxcontrib
       - env:
