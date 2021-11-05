@@ -107,7 +107,7 @@ class ExtensionExplorerLinkList(Directive):
 
             text = name[language]
             if version != 'master':
-                text += ' ({})'.format(version)
+                text += f' ({version})'
 
             reference = nodes.reference('', text, refuri=url)
             paragraph = nodes.paragraph('', '', reference)
@@ -194,7 +194,7 @@ class ExtensionList(Directive):
             definition_list += nodes.definition(description, text)
 
         if extension_list_name and not registry.filter(category=extension_list_name):
-            raise self.warning('No extensions have category {} in extensionlist directive'.format(extension_list_name))
+            raise self.warning(f'No extensions have category {extension_list_name} in extensionlist directive')
 
         admonition_node += definition_list
 
