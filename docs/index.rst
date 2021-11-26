@@ -106,6 +106,24 @@ To render:
 .. extensionlist:: The following extensions are available for the tender section
    :list: tender
 
+workedexample and workedexamplelist
+-----------------------------------
+
+Use:
+
+.. code-block:: rst
+
+   .. workedexample:: Unsuccessful tender
+      :block: tender
+
+   .. workedexamplelist:: The following worked examples are available for the tender section
+      :block: tender
+
+To render:
+
+.. workedexamplelist:: The following extensions are available for the tender section
+   :block: tender
+
 .. toctree::
    :caption: Contents
 
