@@ -3,3 +3,4 @@
 /dist
 /htmlcov
 _build
+__pycache__

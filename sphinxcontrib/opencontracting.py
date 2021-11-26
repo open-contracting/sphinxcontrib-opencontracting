@@ -1,5 +1,6 @@
 import csv
 import json
+import logging
 import os
 from functools import lru_cache
 
@@ -15,6 +16,7 @@ live_branch = os.getenv('TRAVIS_BRANCH', os.getenv('GITHUB_REF', '').rsplit('/',
 extensions_url = 'https://raw.githubusercontent.com/open-contracting/extension_registry/main/extensions.csv'
 extension_versions_url = 'https://raw.githubusercontent.com/open-contracting/extension_registry/main/extension_versions.csv'  # noqa: E501
 extension_explorer_template = 'https://extensions.open-contracting.org/{}/extensions/{}/{}/'
+WORKED_EXAMPLES_ENV_NAME = 'worked_example_all_worked_examples'
 
 
 @lru_cache()
@@ -211,11 +213,104 @@ class ExtensionList(Directive):
         return [admonition_node]
 
 
+class WorkedExampleListNode(nodes.General, nodes.Element):
+    """
+    And empty class only used for identifying the directive references through the documentation
+    """
+    pass
+
+
+class WorkedExampleList(Directive):
+    required_arguments = 1
+    final_argument_whitespace = True
+    option_spec = {'block': directives.unchanged}
+
+    def run(self):
+        title = self.arguments[0]
+        block = self.options.pop('block', '')
+        return [WorkedExampleListNode(block=block, title=title)]
+
+
+class WorkedExample(Directive):
+    required_arguments = 1
+    final_argument_whitespace = True
+    option_spec = {'block': directives.unchanged}
+
+    def run(self):
+        env = self.state.document.settings.env
+        title = self.arguments[0]
+        target_id = f'worked-example-{env.new_serialno("worked-example")}'
+        target_node = nodes.target('', '', ids=[target_id])
+        # A dummy node as we don't want to show anything for the worked example, only mark the content as one
+        ocds_block = self.options.pop('block', '')
+        node = nodes.paragraph('')
+        if not hasattr(env, WORKED_EXAMPLES_ENV_NAME):
+            setattr(env, WORKED_EXAMPLES_ENV_NAME, [])
+
+        getattr(env, WORKED_EXAMPLES_ENV_NAME).append({
+            'docname': env.docname,
+            'lineno': self.lineno,
+            'target': target_node,
+            'block': ocds_block,
+            'title': title,
+        })
+
+        return [target_node, node]
+
+
+def purge_worked_examples(app, env, docname):
+    """
+    Method for removing any existing worked examples from old builds
+    """
+    if not hasattr(env, WORKED_EXAMPLES_ENV_NAME):
+        return
+
+    setattr(env, WORKED_EXAMPLES_ENV_NAME, [worked_example for worked_example in getattr(env, WORKED_EXAMPLES_ENV_NAME)
+                                            if worked_example['docname'] != docname])
+
+
+def process_worked_example_nodes(app, doctree, fromdocname):
+    env = app.builder.env
+
+    if not hasattr(env, WORKED_EXAMPLES_ENV_NAME):
+        setattr(env, WORKED_EXAMPLES_ENV_NAME, [])
+
+    for node in doctree.traverse(WorkedExampleListNode):
+        block = node['block']
+        title = node['title']
+        admonition_node = nodes.admonition('')
+        admonition_node['classes'] += ['admonition', 'note']
+        title = nodes.title('', title)
+        admonition_node += title
+        items = []
+        for worked_example in getattr(env, WORKED_EXAMPLES_ENV_NAME):
+            if block != worked_example['block']:
+                continue
+            uri = app.builder.get_relative_uri(fromdocname,
+                                               f"{worked_example['docname']}#{worked_example['target']['refid']}")
+            reference = nodes.reference('', worked_example['title'], refuri=uri)
+            reference['translatable'] = True
+            paragraph = nodes.paragraph('', '', reference)
+            item = nodes.list_item('', paragraph)
+            items.append(item)
+        admonition_node += nodes.bullet_list('', *items)
+        if not items:
+            raise logging.warning(f'No worked examples are related to {block}')
+        node.replace_self(admonition_node)
+
+
 def setup(app):
     app.add_directive('field-description', FieldDescription)
     app.add_directive('code-description', CodeDescription)
     app.add_directive('extensionexplorerlinklist', ExtensionExplorerLinkList)
     app.add_directive('extensionlist', ExtensionList)
+    app.add_directive('workedexample', WorkedExample)
+    app.add_directive('workedexamplelist', WorkedExampleList)
+
+    app.add_node(WorkedExampleListNode)
+
+    app.connect('doctree-resolved', process_worked_example_nodes)
+    app.connect('env-purge-doc', purge_worked_examples)
 
     app.add_config_value('extension_versions', {}, True)
     app.add_config_value('codelist_headers', {
