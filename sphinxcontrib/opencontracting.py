@@ -213,8 +213,20 @@ class ExtensionList(Directive):
         return [admonition_node]
 
 
-class WorkedExampleListNode(nodes.General, nodes.Element):
+class worked_example_list(nodes.General, nodes.Element):
     pass
+
+
+class worked_example(nodes.General, nodes.Element):
+    pass
+
+
+def visit_worked_example(self, node):
+    self.visit_paragraph(node)
+
+
+def depart_worked_example(self, node):
+    self.depart_paragraph(node)
 
 
 class WorkedExampleList(Directive):
@@ -225,7 +237,7 @@ class WorkedExampleList(Directive):
     def run(self):
         title = self.arguments[0]
         tag = self.options.pop('tag', '')
-        return [WorkedExampleListNode(tag=tag, title=title)]
+        return [worked_example_list(tag=tag, title=title)]
 
 
 class WorkedExample(Directive):
@@ -238,9 +250,8 @@ class WorkedExample(Directive):
         title = self.arguments[0]
         target_id = f'worked-example-{env.new_serialno("worked-example")}'
         target_node = nodes.target('', '', ids=[target_id])
-        # A dummy node as we don't want to show anything for the worked example, only mark the content as one
         ocds_tag = self.options.pop('tag', '')
-        node = nodes.paragraph('')
+        node = worked_example()
         if not hasattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE):
             setattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE, [])
 
@@ -266,26 +277,34 @@ def purge_worked_examples(app, env, docname):
                                                if example['docname'] != docname])
 
 
+def merge_worked_examples(app, env, docnames, other):
+    if not hasattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE):
+        setattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE, [])
+    if hasattr(other, WORKEDEXAMPLE_ENV_ATTRIBUTE):
+        other_attr = getattr(other, WORKEDEXAMPLE_ENV_ATTRIBUTE)
+        env_attr = getattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE)
+        setattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE, env_attr.extend(other_attr))
+
+
 def process_worked_example_nodes(app, doctree, fromdocname):
     env = app.builder.env
 
     if not hasattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE):
         setattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE, [])
 
-    for node in doctree.traverse(WorkedExampleListNode):
+    for node in doctree.traverse(worked_example_list):
         tag = node['tag']
         title = node['title']
         admonition_node = nodes.admonition('')
-        admonition_node['classes'] += ['admonition', 'note']
+        admonition_node['classes'] += ['note']
         title_node = nodes.title('', title)
         admonition_node += title_node
         items = []
-        for worked_example in getattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE):
-            if tag != worked_example['tag']:
+        for example in getattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE):
+            if tag != example['tag']:
                 continue
-            uri = app.builder.get_relative_uri(fromdocname,
-                                               f"{worked_example['docname']}#{worked_example['target']['refid']}")
-            reference = nodes.reference('', worked_example['title'], refuri=uri)
+            uri = f"{app.builder.get_relative_uri(fromdocname, example['docname'])}#{example['target']['refid']}"
+            reference = nodes.reference('', example['title'], refuri=uri)
             reference['translatable'] = True
             paragraph = nodes.paragraph('', '', reference)
             item = nodes.list_item('', paragraph)
@@ -304,10 +323,15 @@ def setup(app):
     app.add_directive('workedexample', WorkedExample)
     app.add_directive('workedexamplelist', WorkedExampleList)
 
-    app.add_node(WorkedExampleListNode)
+    app.add_node(worked_example_list)
+    app.add_node(worked_example,
+                 html=(visit_worked_example, depart_worked_example),
+                 latex=(visit_worked_example, depart_worked_example),
+                 text=(visit_worked_example, depart_worked_example))
 
     app.connect('doctree-resolved', process_worked_example_nodes)
     app.connect('env-purge-doc', purge_worked_examples)
+    app.connect('env-merge-info', merge_worked_examples)
 
     app.add_config_value('extension_versions', {}, True)
     app.add_config_value('codelist_headers', {
