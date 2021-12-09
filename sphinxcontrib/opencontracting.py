@@ -16,7 +16,7 @@ live_branch = os.getenv('TRAVIS_BRANCH', os.getenv('GITHUB_REF', '').rsplit('/',
 extensions_url = 'https://raw.githubusercontent.com/open-contracting/extension_registry/main/extensions.csv'
 extension_versions_url = 'https://raw.githubusercontent.com/open-contracting/extension_registry/main/extension_versions.csv'  # noqa: E501
 extension_explorer_template = 'https://extensions.open-contracting.org/{}/extensions/{}/{}/'
-WORKED_EXAMPLES_ENV_NAME = 'worked_example_all_worked_examples'
+WORKEDEXAMPLE_ENV_ATTRIBUTE = 'workedexample_all_worked_examples'
 
 
 @lru_cache()
@@ -214,9 +214,6 @@ class ExtensionList(Directive):
 
 
 class WorkedExampleListNode(nodes.General, nodes.Element):
-    """
-    And empty class only used for identifying the directive references through the documentation
-    """
     pass
 
 
@@ -265,8 +262,8 @@ def purge_worked_examples(app, env, docname):
     if not hasattr(env, WORKED_EXAMPLES_ENV_NAME):
         return
 
-    setattr(env, WORKED_EXAMPLES_ENV_NAME, [worked_example for worked_example in getattr(env, WORKED_EXAMPLES_ENV_NAME)
-                                            if worked_example['docname'] != docname])
+    setattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE, [example for example in getattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE)
+                                             if example['docname'] != docname])
 
 
 def process_worked_example_nodes(app, doctree, fromdocname):
@@ -280,8 +277,8 @@ def process_worked_example_nodes(app, doctree, fromdocname):
         title = node['title']
         admonition_node = nodes.admonition('')
         admonition_node['classes'] += ['admonition', 'note']
-        title = nodes.title('', title)
-        admonition_node += title
+        title_node = nodes.title('', title)
+        admonition_node += title_node
         items = []
         for worked_example in getattr(env, WORKED_EXAMPLES_ENV_NAME):
             if block != worked_example['block']:
@@ -293,9 +290,9 @@ def process_worked_example_nodes(app, doctree, fromdocname):
             paragraph = nodes.paragraph('', '', reference)
             item = nodes.list_item('', paragraph)
             items.append(item)
-        admonition_node += nodes.bullet_list('', *items)
         if not items:
-            raise logging.warning(f'No worked examples are related to {block}')
+            raise logging.warning('No worked examples are tagged with %s', block)
+        admonition_node += nodes.bullet_list('', *items)
         node.replace_self(admonition_node)
 
 

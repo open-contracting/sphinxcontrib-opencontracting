@@ -126,9 +126,9 @@ def test_code_description_missing_column(app, status, warning):
 @pytest.mark.sphinx(buildername='html', srcdir=path('workedexample'), freshenv=True)
 def test_workedexample(app, status, warning):
     env = app.builder.env
-    assert (not hasattr(env, WORKED_EXAMPLES_ENV_NAME))
+    assert not hasattr(env, WORKED_EXAMPLES_ENV_NAME)
     assert_build(app, status, warning, 'workedexample')
-    assert (getattr(env, WORKED_EXAMPLES_ENV_NAME)[0]['title'] == 'Unsuccessful tender')
+    assert getattr(env, WORKED_EXAMPLES_ENV_NAME)[0]['title'] == 'Unsuccessful tender'
 
 
 @pytest.mark.sphinx(buildername='html', srcdir=path('workedexamplelist'), freshenv=True)
