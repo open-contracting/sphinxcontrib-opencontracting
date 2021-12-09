@@ -1,2 +1,2 @@
 .. workedexample:: Unsuccessful tender
-   :block: tender
+   :tag: tender
