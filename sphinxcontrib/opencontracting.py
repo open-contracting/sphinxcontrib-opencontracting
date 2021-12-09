@@ -220,18 +220,18 @@ class WorkedExampleListNode(nodes.General, nodes.Element):
 class WorkedExampleList(Directive):
     required_arguments = 1
     final_argument_whitespace = True
-    option_spec = {'block': directives.unchanged}
+    option_spec = {'tag': directives.unchanged}
 
     def run(self):
         title = self.arguments[0]
-        block = self.options.pop('block', '')
-        return [WorkedExampleListNode(block=block, title=title)]
+        tag = self.options.pop('tag', '')
+        return [WorkedExampleListNode(tag=tag, title=title)]
 
 
 class WorkedExample(Directive):
     required_arguments = 1
     final_argument_whitespace = True
-    option_spec = {'block': directives.unchanged}
+    option_spec = {'tag': directives.unchanged}
 
     def run(self):
         env = self.state.document.settings.env
@@ -239,16 +239,16 @@ class WorkedExample(Directive):
         target_id = f'worked-example-{env.new_serialno("worked-example")}'
         target_node = nodes.target('', '', ids=[target_id])
         # A dummy node as we don't want to show anything for the worked example, only mark the content as one
-        ocds_block = self.options.pop('block', '')
+        ocds_tag = self.options.pop('tag', '')
         node = nodes.paragraph('')
-        if not hasattr(env, WORKED_EXAMPLES_ENV_NAME):
-            setattr(env, WORKED_EXAMPLES_ENV_NAME, [])
+        if not hasattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE):
+            setattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE, [])
 
-        getattr(env, WORKED_EXAMPLES_ENV_NAME).append({
+        getattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE).append({
             'docname': env.docname,
             'lineno': self.lineno,
             'target': target_node,
-            'block': ocds_block,
+            'tag': ocds_tag,
             'title': title,
         })
 
@@ -259,29 +259,29 @@ def purge_worked_examples(app, env, docname):
     """
     Method for removing any existing worked examples from old builds
     """
-    if not hasattr(env, WORKED_EXAMPLES_ENV_NAME):
+    if not hasattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE):
         return
 
     setattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE, [example for example in getattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE)
-                                             if example['docname'] != docname])
+                                               if example['docname'] != docname])
 
 
 def process_worked_example_nodes(app, doctree, fromdocname):
     env = app.builder.env
 
-    if not hasattr(env, WORKED_EXAMPLES_ENV_NAME):
-        setattr(env, WORKED_EXAMPLES_ENV_NAME, [])
+    if not hasattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE):
+        setattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE, [])
 
     for node in doctree.traverse(WorkedExampleListNode):
-        block = node['block']
+        tag = node['tag']
         title = node['title']
         admonition_node = nodes.admonition('')
         admonition_node['classes'] += ['admonition', 'note']
         title_node = nodes.title('', title)
         admonition_node += title_node
         items = []
-        for worked_example in getattr(env, WORKED_EXAMPLES_ENV_NAME):
-            if block != worked_example['block']:
+        for worked_example in getattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE):
+            if tag != worked_example['tag']:
                 continue
             uri = app.builder.get_relative_uri(fromdocname,
                                                f"{worked_example['docname']}#{worked_example['target']['refid']}")
@@ -291,7 +291,7 @@ def process_worked_example_nodes(app, doctree, fromdocname):
             item = nodes.list_item('', paragraph)
             items.append(item)
         if not items:
-            raise logging.warning('No worked examples are tagged with %s', block)
+            raise logging.warning('No worked examples are tagged with %s', tag)
         admonition_node += nodes.bullet_list('', *items)
         node.replace_self(admonition_node)
 
