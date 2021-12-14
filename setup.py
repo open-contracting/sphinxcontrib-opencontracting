@@ -28,7 +28,12 @@ setup(
             'lxml',
             'pytest',
             'pytest-cov',
-            'Sphinx',
+            'sphinx',
+        ],
+        'docs': [
+            'furo',
+            'sphinx',
+            'sphinx-autobuild',
         ],
     },
     classifiers=[
