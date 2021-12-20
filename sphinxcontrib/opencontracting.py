@@ -237,6 +237,7 @@ class WorkedExampleList(Directive):
     def run(self):
         title = self.arguments[0]
         tag = self.options.pop('tag', '')
+
         return [worked_example_list(tag=tag, title=title)]
 
 
@@ -247,11 +248,15 @@ class WorkedExample(Directive):
 
     def run(self):
         env = self.state.document.settings.env
+
         title = self.arguments[0]
+        tag = self.options.pop('tag', '')
+
         target_id = f'worked-example-{env.new_serialno("worked-example")}'
         target_node = nodes.target('', '', ids=[target_id])
-        ocds_tag = self.options.pop('tag', '')
+
         node = worked_example()
+
         if not hasattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE):
             setattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE, [])
 
@@ -259,31 +264,28 @@ class WorkedExample(Directive):
             'docname': env.docname,
             'lineno': self.lineno,
             'target': target_node,
-            'tag': ocds_tag,
             'title': title,
+            'tag': tag,
         })
 
         return [target_node, node]
 
 
 def purge_worked_examples(app, env, docname):
-    """
-    Method for removing any existing worked examples from old builds
-    """
     if not hasattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE):
         return
 
-    setattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE, [example for example in getattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE)
-                                               if example['docname'] != docname])
+    setattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE, [
+        example for example in getattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE) if example['docname'] != docname
+    ])
 
 
 def merge_worked_examples(app, env, docnames, other):
     if not hasattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE):
         setattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE, [])
+
     if hasattr(other, WORKEDEXAMPLE_ENV_ATTRIBUTE):
-        other_attr = getattr(other, WORKEDEXAMPLE_ENV_ATTRIBUTE)
-        env_attr = getattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE)
-        setattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE, env_attr.extend(other_attr))
+        getattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE).extend(getattr(other, WORKEDEXAMPLE_ENV_ATTRIBUTE))
 
 
 def process_worked_example_nodes(app, doctree, fromdocname):
@@ -293,24 +295,30 @@ def process_worked_example_nodes(app, doctree, fromdocname):
         setattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE, [])
 
     for node in doctree.traverse(worked_example_list):
-        tag = node['tag']
         title = node['title']
+        tag = node['tag']
+
+        title_node = nodes.title('', title)
         admonition_node = nodes.admonition('')
         admonition_node['classes'] += ['note']
-        title_node = nodes.title('', title)
         admonition_node += title_node
+
         items = []
         for example in getattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE):
             if tag != example['tag']:
                 continue
+
             uri = f"{app.builder.get_relative_uri(fromdocname, example['docname'])}#{example['target']['refid']}"
             reference = nodes.reference('', example['title'], refuri=uri)
             reference['translatable'] = True
+
             paragraph = nodes.paragraph('', '', reference)
             item = nodes.list_item('', paragraph)
             items.append(item)
+
         if not items:
             raise logging.warning('No worked examples are tagged with %s', tag)
+
         admonition_node += nodes.bullet_list('', *items)
         node.replace_self(admonition_node)
 
