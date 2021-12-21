@@ -11,6 +11,7 @@ from docutils.parsers.rst import Directive, directives
 from docutils.parsers.rst.roles import set_classes
 from myst_parser.main import to_docutils
 from ocdsextensionregistry import ExtensionRegistry
+from sphinx.errors import SphinxError
 
 live_branch = os.getenv('TRAVIS_BRANCH', os.getenv('GITHUB_REF', '').rsplit('/', 1)[-1]) in {'1.0', '1.1', 'latest'}
 extensions_url = 'https://raw.githubusercontent.com/open-contracting/extension_registry/main/extensions.csv'
@@ -22,6 +23,10 @@ WORKEDEXAMPLE_ENV_ATTRIBUTE = 'workedexample_all_worked_examples'
 @lru_cache()
 def get_extension_explorer_extensions_json():
     return requests.get('https://extensions.open-contracting.org/extensions.json').json()
+
+
+class Error(SphinxError):
+    category = 'sphinxcontrib-opencontracting error'
 
 
 class FieldDescription(Directive):
@@ -317,7 +322,7 @@ def process_worked_example_nodes(app, doctree, fromdocname):
             items.append(item)
 
         if not items:
-            raise logging.warning('No worked examples are tagged with %s', tag)
+            raise Error(f'No worked examples are tagged with {tag}')
 
         admonition_node += nodes.bullet_list('', *items)
         node.replace_self(admonition_node)

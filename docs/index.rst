@@ -128,6 +128,9 @@ Where:
 
 To render:
 
+.. workedexample:: Unsuccessful tender
+   :tag: tender
+
 .. workedexamplelist:: The following extensions are available for the tender section
    :tag: tender
 
