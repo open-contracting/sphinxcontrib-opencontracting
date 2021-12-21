@@ -5,7 +5,6 @@ from pathlib import Path
 
 import lxml.html
 import pytest
-from sphinx.errors import ExtensionError
 
 from sphinxcontrib.opencontracting import WORKEDEXAMPLE_ENV_ATTRIBUTE, Error
 from tests import path
