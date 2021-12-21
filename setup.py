@@ -21,6 +21,7 @@ setup(
         'MyST-Parser',
         'requests',
         'ocdsextensionregistry>=0.0.8',
+        'sphinx',
     ],
     extras_require={
         'test': [
