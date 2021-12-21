@@ -7,7 +7,7 @@ import lxml.html
 import pytest
 from sphinx.errors import ExtensionError
 
-from sphinxcontrib.opencontracting import WORKEDEXAMPLE_ENV_ATTRIBUTE
+from sphinxcontrib.opencontracting import WORKEDEXAMPLE_ENV_ATTRIBUTE, Error
 from tests import path
 
 
@@ -137,8 +137,8 @@ def test_workedexamplelist(app, status, warning):
 
 
 @pytest.mark.sphinx(buildername='html', srcdir=path('workedexamplelist-non-existing'), freshenv=True)
-def test_workedexamplelist_non_existing(app, status, warning):
-    with pytest.raises(ExtensionError):
-        assert_build(app, status, warning, 'workedexamplelist', [
-            'WARNING: No worked examples are related to nonexistent',
-        ])
+def test_workedexamplelist_nonexistent(app, status, warning):
+    with pytest.raises(Error) as excinfo:
+        assert_build(app, status, warning, 'workedexamplelist')
+
+    assert str(excinfo.value) == 'No worked examples are tagged with nonexistent'
