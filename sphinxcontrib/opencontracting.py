@@ -1,5 +1,6 @@
 import csv
 import json
+import logging
 import os
 from functools import lru_cache
 
@@ -15,6 +16,7 @@ live_branch = os.getenv('TRAVIS_BRANCH', os.getenv('GITHUB_REF', '').rsplit('/',
 extensions_url = 'https://raw.githubusercontent.com/open-contracting/extension_registry/main/extensions.csv'
 extension_versions_url = 'https://raw.githubusercontent.com/open-contracting/extension_registry/main/extension_versions.csv'  # noqa: E501
 extension_explorer_template = 'https://extensions.open-contracting.org/{}/extensions/{}/{}/'
+WORKEDEXAMPLE_ENV_ATTRIBUTE = 'workedexample_all_worked_examples'
 
 
 @lru_cache()
@@ -211,11 +213,133 @@ class ExtensionList(Directive):
         return [admonition_node]
 
 
+class worked_example_list(nodes.General, nodes.Element):
+    pass
+
+
+class worked_example(nodes.General, nodes.Element):
+    pass
+
+
+def visit_worked_example(self, node):
+    self.visit_paragraph(node)
+
+
+def depart_worked_example(self, node):
+    self.depart_paragraph(node)
+
+
+class WorkedExampleList(Directive):
+    required_arguments = 1
+    final_argument_whitespace = True
+    option_spec = {'tag': directives.unchanged}
+
+    def run(self):
+        title = self.arguments[0]
+        tag = self.options.pop('tag', '')
+
+        return [worked_example_list(tag=tag, title=title)]
+
+
+class WorkedExample(Directive):
+    required_arguments = 1
+    final_argument_whitespace = True
+    option_spec = {'tag': directives.unchanged}
+
+    def run(self):
+        env = self.state.document.settings.env
+
+        title = self.arguments[0]
+        tag = self.options.pop('tag', '')
+
+        target_id = f'worked-example-{env.new_serialno("worked-example")}'
+        target_node = nodes.target('', '', ids=[target_id])
+
+        node = worked_example()
+
+        if not hasattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE):
+            setattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE, [])
+
+        getattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE).append({
+            'docname': env.docname,
+            'lineno': self.lineno,
+            'target': target_node,
+            'title': title,
+            'tag': tag,
+        })
+
+        return [target_node, node]
+
+
+def purge_worked_examples(app, env, docname):
+    if not hasattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE):
+        return
+
+    setattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE, [
+        example for example in getattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE) if example['docname'] != docname
+    ])
+
+
+def merge_worked_examples(app, env, docnames, other):
+    if not hasattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE):
+        setattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE, [])
+
+    if hasattr(other, WORKEDEXAMPLE_ENV_ATTRIBUTE):
+        getattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE).extend(getattr(other, WORKEDEXAMPLE_ENV_ATTRIBUTE))
+
+
+def process_worked_example_nodes(app, doctree, fromdocname):
+    env = app.builder.env
+
+    if not hasattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE):
+        setattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE, [])
+
+    for node in doctree.traverse(worked_example_list):
+        title = node['title']
+        tag = node['tag']
+
+        title_node = nodes.title('', title)
+        admonition_node = nodes.admonition('')
+        admonition_node['classes'] += ['note']
+        admonition_node += title_node
+
+        items = []
+        for example in getattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE):
+            if tag != example['tag']:
+                continue
+
+            uri = f"{app.builder.get_relative_uri(fromdocname, example['docname'])}#{example['target']['refid']}"
+            reference = nodes.reference('', example['title'], refuri=uri)
+            reference['translatable'] = True
+
+            paragraph = nodes.paragraph('', '', reference)
+            item = nodes.list_item('', paragraph)
+            items.append(item)
+
+        if not items:
+            raise logging.warning('No worked examples are tagged with %s', tag)
+
+        admonition_node += nodes.bullet_list('', *items)
+        node.replace_self(admonition_node)
+
+
 def setup(app):
     app.add_directive('field-description', FieldDescription)
     app.add_directive('code-description', CodeDescription)
     app.add_directive('extensionexplorerlinklist', ExtensionExplorerLinkList)
     app.add_directive('extensionlist', ExtensionList)
+    app.add_directive('workedexample', WorkedExample)
+    app.add_directive('workedexamplelist', WorkedExampleList)
+
+    app.add_node(worked_example_list)
+    app.add_node(worked_example,
+                 html=(visit_worked_example, depart_worked_example),
+                 latex=(visit_worked_example, depart_worked_example),
+                 text=(visit_worked_example, depart_worked_example))
+
+    app.connect('doctree-resolved', process_worked_example_nodes)
+    app.connect('env-purge-doc', purge_worked_examples)
+    app.connect('env-merge-info', merge_worked_examples)
 
     app.add_config_value('extension_versions', {}, True)
     app.add_config_value('codelist_headers', {

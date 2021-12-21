@@ -5,7 +5,9 @@ from pathlib import Path
 
 import lxml.html
 import pytest
+from sphinx.errors import ExtensionError
 
+from sphinxcontrib.opencontracting import WORKEDEXAMPLE_ENV_ATTRIBUTE
 from tests import path
 
 
@@ -119,3 +121,24 @@ def test_code_description_missing_column(app, status, warning):
     assert_build(app, status, warning, basename, [
         f"Column 'non-code' not found (Code, Description): {path(basename, 'codelist.csv')}",
     ])
+
+
+@pytest.mark.sphinx(buildername='html', srcdir=path('workedexample'), freshenv=True)
+def test_workedexample(app, status, warning):
+    env = app.builder.env
+    assert not hasattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE)
+    assert_build(app, status, warning, 'workedexample')
+    assert getattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE)[0]['title'] == 'Unsuccessful tender'
+
+
+@pytest.mark.sphinx(buildername='html', srcdir=path('workedexamplelist'), freshenv=True)
+def test_workedexamplelist(app, status, warning):
+    assert_build(app, status, warning, 'workedexamplelist')
+
+
+@pytest.mark.sphinx(buildername='html', srcdir=path('workedexamplelist-non-existing'), freshenv=True)
+def test_workedexamplelist_non_existing(app, status, warning):
+    with pytest.raises(ExtensionError):
+        assert_build(app, status, warning, 'workedexamplelist', [
+            'WARNING: No worked examples are related to nonexistent',
+        ])

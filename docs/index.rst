@@ -106,6 +106,29 @@ To render:
 .. extensionlist:: The following extensions are available for the tender section
    :list: tender
 
+workedexample and workedexamplelist
+-----------------------------------
+
+Use:
+
+.. code-block:: rst
+
+   .. workedexample:: Unsuccessful tender
+      :tag: tender
+
+   .. workedexamplelist:: The following worked examples are available for the tender section
+      :tag: tender
+
+Where:
+
+- The ``workedexample`` directive is used at the top of a section to mark the content as a worked example. Its argument is used as the text of the hyperlink rendered by the ``workedexamplelist`` directive.
+- The ``workedexamplelist`` directive is used to list all the worked examples tagged with the specified ``tag``.
+
+To render:
+
+.. workedexamplelist:: The following extensions are available for the tender section
+   :tag: tender
+
 .. toctree::
    :caption: Contents
 
