@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.0.6 (2022-01-18)
+------------------
+
+-  feat: Support multiple tags per :ref:`workedexample`.
+
 0.0.5 (2021-02-20)
 ------------------
 
