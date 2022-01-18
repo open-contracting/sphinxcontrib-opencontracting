@@ -123,13 +123,13 @@ Use:
 
 Where:
 
-- The ``workedexample`` directive is used at the top of a section to mark the content as a worked example. Its argument is used as the text of the hyperlink rendered by the ``workedexamplelist`` directive.
+- The ``workedexample`` directive is used at the top of a section to mark the content as a worked example. Use the ``tags`` attribute to indicate the content this worked example is referring to. Multiple values are allowed by using comma-separated values. Its argument is used as the text of the hyperlink rendered by the ``workedexamplelist`` directive.
 - The ``workedexamplelist`` directive is used to list all the worked examples tagged with the specified ``tag``.
 
 To render:
 
 .. workedexample:: Unsuccessful tender
-   :tag: tender
+   :tags: tender
 
 .. workedexamplelist:: The following extensions are available for the tender section
    :tag: tender
