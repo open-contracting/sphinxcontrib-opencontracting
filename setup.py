@@ -29,7 +29,7 @@ setup(
             'lxml',
             'pytest',
             'pytest-cov',
-            'sphinx',
+            'sphinx>=4.4.0',
         ],
         'docs': [
             'furo',

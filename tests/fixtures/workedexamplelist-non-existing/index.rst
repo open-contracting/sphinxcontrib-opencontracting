@@ -1,5 +1,5 @@
 .. workedexample:: Unsuccessful tender
-   :tag: tender
+   :tags: tender
 
 .. workedexamplelist:: The following worked examples are available for nonexistent
    :tag: nonexistent

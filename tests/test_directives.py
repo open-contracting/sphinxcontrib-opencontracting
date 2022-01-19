@@ -53,9 +53,9 @@ def test_field_description(app, status, warning):
     basename = 'field-description'
 
     assert_build(app, status, warning, basename, [
-        f"WARNING: JSON Schema file not found: {path(basename, 'nonexistent.json')}",
-        f"WARNING: JSON Schema file not valid: {path(basename, 'invalid.json')}",
-        f"WARNING: Pointer '/properties/nonexistent/description' not found: {path(basename, 'schema.json')}",
+        f"ERROR: JSON Schema file not found: {path(basename, 'nonexistent.json')}",
+        f"ERROR: JSON Schema file not valid: {path(basename, 'invalid.json')}",
+        f"ERROR: Pointer '/properties/nonexistent/description' not found: {path(basename, 'schema.json')}",
     ])
 
 
@@ -64,8 +64,8 @@ def test_code_description(app, status, warning):
     basename = 'code-description'
 
     assert_build(app, status, warning, basename, [
-        f"WARNING: CSV codelist file not found: {path(basename, 'nonexistent.csv')}",
-        f"WARNING: Value 'nonexistent' not found in column 'Code': {path(basename, 'codelist.csv')}",
+        f"ERROR: CSV codelist file not found: {path(basename, 'nonexistent.csv')}",
+        f"ERROR: Value 'nonexistent' not found in column 'Code': {path(basename, 'codelist.csv')}",
     ])
 
 
@@ -94,8 +94,8 @@ def test_nonreadable(app, status, warning):
 
     with nonreadable(path(basename, 'nonreadable.json')), nonreadable(path(basename, 'nonreadable.csv')):
         assert_build(app, status, warning, basename, [
-            f"WARNING: JSON Schema file not readable: {path(basename, 'nonreadable.json')}",
-            f"WARNING: CSV codelist file not readable: {path(basename, 'nonreadable.csv')}",
+            f"ERROR: JSON Schema file not readable: {path(basename, 'nonreadable.json')}",
+            f"ERROR: CSV codelist file not readable: {path(basename, 'nonreadable.csv')}",
         ])
 
 

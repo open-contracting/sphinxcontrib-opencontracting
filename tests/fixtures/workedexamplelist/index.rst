@@ -1,5 +1,5 @@
-.. workedexample:: Unsuccessful tender
-   :tag: tender
+.. workedexample:: Awards and contracts
+   :tags: award,contract
 
-.. workedexamplelist:: The following worked examples are available for tender
-   :tag: tender
+.. workedexamplelist:: The following worked examples are available for awards
+   :tag: award

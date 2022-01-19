@@ -248,13 +248,13 @@ class WorkedExampleList(Directive):
 class WorkedExample(Directive):
     required_arguments = 1
     final_argument_whitespace = True
-    option_spec = {'tag': directives.unchanged}
+    option_spec = {'tags': directives.unchanged}
 
     def run(self):
         env = self.state.document.settings.env
 
         title = self.arguments[0]
-        tag = self.options.pop('tag', '')
+        tags = self.options.pop('tags', '')
 
         target_id = f'worked-example-{env.new_serialno("worked-example")}'
         target_node = nodes.target('', '', ids=[target_id])
@@ -269,7 +269,7 @@ class WorkedExample(Directive):
             'lineno': self.lineno,
             'target': target_node,
             'title': title,
-            'tag': tag,
+            'tags': tags,
         })
 
         return [target_node, node]
@@ -309,7 +309,7 @@ def process_worked_example_nodes(app, doctree, fromdocname):
 
         items = []
         for example in getattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE):
-            if tag != example['tag']:
+            if tag not in example['tags'].split(','):
                 continue
 
             uri = f"{app.builder.get_relative_uri(fromdocname, example['docname'])}#{example['target']['refid']}"

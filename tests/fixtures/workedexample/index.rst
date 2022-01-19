@@ -1,2 +1,2 @@
 .. workedexample:: Unsuccessful tender
-   :tag: tender
+   :tags: tender
