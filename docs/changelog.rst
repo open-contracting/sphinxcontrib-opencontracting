@@ -9,17 +9,17 @@ Changelog
 0.0.6 (2022-01-18)
 ------------------
 
--  feat: Support multiple tags per :ref:`workedexample`.
+-  feat: :ref:`workedexample<workedexample>`: Support multiple tags.
 
-0.0.5 (2021-02-20)
+0.0.5 (2021-12-20)
 ------------------
 
 -  fix: Clarify error message if ``workedexamplelist``'s ``tag`` matches no ``workedexample`` directives.
 
-0.0.4 (2021-02-20)
+0.0.4 (2021-12-20)
 ------------------
 
--  feat: Add :ref:`workedexample` and ``workedexamplelist`` directives.
+-  feat: Add :ref:`workedexample and workedexamplelist<workedexample>` directives.
 -  Add PyPy 3.7 support.
 
 0.0.3 (2021-04-28)
