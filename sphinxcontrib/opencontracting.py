@@ -105,7 +105,11 @@ class ExtensionExplorerLinkList(Directive):
         extensions = get_extension_explorer_extensions_json()
 
         for identifier, version in extension_versions.items():
-            name = extensions[identifier]['versions'][version]['metadata']['name']
+            try:
+                name = extensions[identifier]['versions'][version]['metadata']['name']
+            except KeyError:
+                raise self.error(f"{identifier}=={version} is not in the extension registry")
+
             if language not in name:
                 language = 'en'
 
