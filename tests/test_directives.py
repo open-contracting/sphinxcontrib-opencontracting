@@ -81,9 +81,9 @@ def test_extensionexplorerlinklist_i18n(app, status, warning):
 
 
 @pytest.mark.sphinx(buildername='html', srcdir=path('extensionexplorerlinklist-non-existing'), freshenv=True)
-def test_extensionexplorerlinklist(app, status, warning):
+def test_extensionexplorerlinklist_non_existing(app, status, warning):
     assert_build(app, status, warning, 'extensionexplorerlinklist-non-existing', [
-        f"ERROR: bids==x is not in the extension registry",
+        "ERROR: bids==x is not in the extension registry",
     ])
 
 
