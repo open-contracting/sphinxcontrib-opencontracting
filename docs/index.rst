@@ -136,6 +136,7 @@ To render:
 
 .. toctree::
    :caption: Contents
+   :maxdepth: 1
 
    changelog
 
