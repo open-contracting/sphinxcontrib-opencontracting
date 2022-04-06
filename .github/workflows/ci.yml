@@ -14,23 +14,17 @@ jobs:
             python-version: pypy-3.7
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v3.1.0
+      - uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
-      - id: pip-cache
-        run: echo "::set-output name=dir::$(pip cache dir)"
-      - uses: actions/cache@v3
-        with:
-          path: ${{ steps.pip-cache.outputs.dir }}
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt', 'setup.py') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+          cache: pip
+          cache-dependency-path: setup.py
       - if: matrix.os == 'ubuntu-latest' && matrix.python-version == 'pypy-3.7'
         run: |
           sudo apt update
           sudo apt install libxml2-dev libxslt-dev
       - run: pip install .[test]
-      - run: pytest -vv --cov sphinxcontrib
+      - run: pytest -W error --cov sphinxcontrib -vv
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: coveralls --service=github
