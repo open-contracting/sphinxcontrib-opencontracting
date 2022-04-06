@@ -25,7 +25,7 @@ jobs:
           sudo apt install libxml2-dev libxslt-dev
       - run: pip install .[test]
       # Avoid ImportWarning from YAML on PyPy 3.7. https://github.com/yaml/pyyaml/issues/534
-      # myst-parser requires pyyaml, which requests-cache loads if available.
+      # requests-cache loads pyyaml if available. ocdsextensionregistry requires requests-cache. myst-parser requires pyyaml.
       - run: pytest -W error -W ignore::ImportWarning --cov sphinxcontrib -vv
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
