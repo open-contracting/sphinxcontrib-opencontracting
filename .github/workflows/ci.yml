@@ -26,7 +26,7 @@ jobs:
       - run: pip install .[test]
       # Avoid ImportWarning from YAML on PyPy 3.7. https://github.com/yaml/pyyaml/issues/534
       # requests-cache loads pyyaml if available. ocdsextensionregistry requires requests-cache. myst-parser requires pyyaml.
-      - run: pytest -W error -W ignore::ImportWarning --cov sphinxcontrib --cov sphinxcontrib.opencontracting -vv
+      - run: pytest -W error -W ignore::ImportWarning --cov sphinxcontrib.opencontracting
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: coveralls --service=github
