@@ -313,7 +313,7 @@ def process_worked_example_nodes(app, doctree, fromdocname):
     if not hasattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE):
         setattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE, [])
 
-    for node in doctree.traverse(worked_example_list):
+    for node in doctree.findall(worked_example_list):
         title = node['title']
         tag = node['tag']
 
