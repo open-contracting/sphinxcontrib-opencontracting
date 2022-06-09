@@ -5,6 +5,7 @@ Changelog
 ------------------
 
 -  Add MyST-Parser 0.18 support.
+-  Drop Python 3.6 support.
 
 0.0.7 (2022-04-05)
 ------------------
