@@ -8,7 +8,10 @@ import requests
 from docutils import nodes
 from docutils.parsers.rst import Directive, directives
 from docutils.parsers.rst.roles import set_classes
-from myst_parser.main import to_docutils
+from myst_parser.config.main import MdParserConfig
+from myst_parser.mdit_to_docutils.base import make_document
+from myst_parser.mdit_to_docutils.sphinx_ import SphinxRenderer
+from myst_parser.parsers.mdit import create_md_parser
 from ocdsextensionregistry import ExtensionRegistry
 from sphinx.errors import SphinxError
 
@@ -17,6 +20,14 @@ extensions_url = 'https://raw.githubusercontent.com/open-contracting/extension_r
 extension_versions_url = 'https://raw.githubusercontent.com/open-contracting/extension_registry/main/extension_versions.csv'  # noqa: E501
 extension_explorer_template = 'https://extensions.open-contracting.org/{}/extensions/{}/{}/'
 WORKEDEXAMPLE_ENV_ATTRIBUTE = 'workedexample_all_worked_examples'
+
+
+# to_docutils was removed in myst-parser>=0.18.
+def to_docutils(text):
+    # Code is similar to MystParser.parse and myst_parser.parsers.docutils_.Parser.parse.
+    parser = create_md_parser(MdParserConfig(), SphinxRenderer)
+    parser.options["document"] = make_document()
+    return parser.render(text)
 
 
 @lru_cache()
