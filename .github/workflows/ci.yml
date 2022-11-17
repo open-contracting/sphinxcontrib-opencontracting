@@ -11,6 +11,8 @@ jobs:
         exclude:
           # https://www.lfd.uci.edu/~gohlke/pythonlibs/ has no permalinks.
           - os: windows-latest
+            python-version: '3.11'
+          - os: windows-latest
             python-version: pypy-3.7
     steps:
       - uses: actions/checkout@v3
