@@ -26,7 +26,9 @@ jobs:
       - run: pip install .[test]
       # Avoid ImportWarning from YAML on PyPy 3.7. https://github.com/yaml/pyyaml/issues/534
       # requests-cache loads pyyaml if available. ocdsextensionregistry requires requests-cache. myst-parser requires pyyaml.
-      - run: pytest -W error -W ignore::ImportWarning --cov sphinxcontrib.opencontracting
+      # Avoid DeprecationWarning from MyST-Parser>0.18.1 https://github.com/executablebooks/MyST-Parser/issues/612
+      # and Sphinx>5.3.0 https://github.com/sphinx-doc/sphinx/issues/10440
+      - run: pytest -W error -W ignore::ImportWarning -W ignore::DeprecationWarning --cov sphinxcontrib.opencontracting
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: coveralls --service=github
