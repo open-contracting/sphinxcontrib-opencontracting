@@ -15,7 +15,7 @@ from myst_parser.parsers.mdit import create_md_parser
 from ocdsextensionregistry import ExtensionRegistry
 from sphinx.errors import SphinxError
 
-live_branch = os.getenv('TRAVIS_BRANCH', os.getenv('GITHUB_REF', '').rsplit('/', 1)[-1]) in {'1.0', '1.1', 'latest'}
+live_branch = os.getenv('GITHUB_REF_NAME', '') in {'1.0', '1.1', 'latest'}
 extensions_url = 'https://raw.githubusercontent.com/open-contracting/extension_registry/main/extensions.csv'
 extension_versions_url = 'https://raw.githubusercontent.com/open-contracting/extension_registry/main/extension_versions.csv'  # noqa: E501
 extension_explorer_template = 'https://extensions.open-contracting.org/{}/extensions/{}/{}/'
