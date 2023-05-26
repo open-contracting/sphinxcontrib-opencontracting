@@ -24,9 +24,11 @@ WORKEDEXAMPLE_ENV_ATTRIBUTE = 'workedexample_all_worked_examples'
 
 # to_docutils was removed in myst-parser>=0.18.
 def to_docutils(text):
-    # Code is similar to MystParser.parse and myst_parser.parsers.docutils_.Parser.parse.
+    # Code is similar to myst_parser.parsers.sphinx_.MystParser.parse and myst_parser.parsers.docutils_.Parser.parse.
     parser = create_md_parser(MdParserConfig(), SphinxRenderer)
     parser.options["document"] = make_document()
+    # https://github.com/executablebooks/MyST-Parser/issues/768
+    parser.options["document"].settings.env = None
     return parser.render(text)
 
 
