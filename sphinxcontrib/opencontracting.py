@@ -23,12 +23,11 @@ WORKEDEXAMPLE_ENV_ATTRIBUTE = 'workedexample_all_worked_examples'
 
 
 # to_docutils was removed in myst-parser>=0.18.
-def to_docutils(text):
+def to_docutils(text, env):
     # Code is similar to myst_parser.parsers.sphinx_.MystParser.parse and myst_parser.parsers.docutils_.Parser.parse.
     parser = create_md_parser(MdParserConfig(), SphinxRenderer)
     parser.options["document"] = make_document()
-    # https://github.com/executablebooks/MyST-Parser/issues/768
-    parser.options["document"].settings.env = None
+    parser.options["document"].settings.env = env
     return parser.render(text)
 
 
@@ -65,7 +64,7 @@ class FieldDescription(Directive):
         except jsonpointer.JsonPointerException:
             raise self.error(f"Pointer '{pointer}/description' not found: {path}")
 
-        block_quote = nodes.block_quote('', *to_docutils(description).children,
+        block_quote = nodes.block_quote('', *to_docutils(description, env).children,
                                         classes=['directive--field-description'])
 
         return [block_quote]
@@ -102,7 +101,7 @@ class CodeDescription(Directive):
         except StopIteration:
             raise self.error(f"Value '{code}' not found in column '{headers['code']}': {path}")
 
-        block_quote = nodes.block_quote('', *to_docutils(description).children,
+        block_quote = nodes.block_quote('', *to_docutils(description, env).children,
                                         classes=['directive--code-description'])
 
         return [block_quote]
