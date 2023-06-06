@@ -9,8 +9,7 @@ from docutils import nodes
 from docutils.parsers.rst import Directive, directives
 from docutils.parsers.rst.roles import set_classes
 from myst_parser.config.main import MdParserConfig
-from myst_parser.mdit_to_docutils.base import make_document
-from myst_parser.mdit_to_docutils.sphinx_ import SphinxRenderer
+from myst_parser.mdit_to_docutils.base import DocutilsRenderer, make_document
 from myst_parser.parsers.mdit import create_md_parser
 from ocdsextensionregistry import ExtensionRegistry
 from sphinx.errors import SphinxError
@@ -23,11 +22,10 @@ WORKEDEXAMPLE_ENV_ATTRIBUTE = 'workedexample_all_worked_examples'
 
 
 # to_docutils was removed in myst-parser>=0.18.
-def to_docutils(text, env):
-    # Code is similar to myst_parser.parsers.sphinx_.MystParser.parse and myst_parser.parsers.docutils_.Parser.parse.
-    parser = create_md_parser(MdParserConfig(), SphinxRenderer)
+def to_docutils(text):
+    # Code is similar to myst_parser.parsers.docutils_.Parser.parse.
+    parser = create_md_parser(MdParserConfig(), DocutilsRenderer)
     parser.options["document"] = make_document()
-    parser.options["document"].settings.env = env
     return parser.render(text)
 
 
@@ -64,7 +62,7 @@ class FieldDescription(Directive):
         except jsonpointer.JsonPointerException:
             raise self.error(f"Pointer '{pointer}/description' not found: {path}")
 
-        block_quote = nodes.block_quote('', *to_docutils(description, env).children,
+        block_quote = nodes.block_quote('', *to_docutils(description).children,
                                         classes=['directive--field-description'])
 
         return [block_quote]
@@ -101,7 +99,7 @@ class CodeDescription(Directive):
         except StopIteration:
             raise self.error(f"Value '{code}' not found in column '{headers['code']}': {path}")
 
-        block_quote = nodes.block_quote('', *to_docutils(description, env).children,
+        block_quote = nodes.block_quote('', *to_docutils(description).children,
                                         classes=['directive--code-description'])
 
         return [block_quote]
