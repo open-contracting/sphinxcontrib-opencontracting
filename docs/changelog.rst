@@ -31,7 +31,7 @@ Changelog
 ------------------
 
 -  feat: Add :ref:`workedexample and workedexamplelist<workedexample>` directives.
--  Add PyPy 3.7 support.
+-  Add PyPy support.
 
 0.0.3 (2021-04-28)
 ------------------
