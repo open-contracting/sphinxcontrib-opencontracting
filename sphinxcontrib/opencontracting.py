@@ -29,7 +29,7 @@ def to_docutils(text):
     return parser.render(text)
 
 
-@lru_cache()
+@lru_cache
 def get_extension_explorer_extensions_json():
     return requests.get('https://extensions.open-contracting.org/extensions.json').json()
 
