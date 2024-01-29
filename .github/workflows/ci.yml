@@ -20,7 +20,9 @@ jobs:
           sudo apt update
           sudo apt install libxml2-dev libxslt-dev
       - run: pip install .[test]
-      - run: pytest -W error --cov sphinxcontrib.opencontracting
+      # Avoid DeprecationWarning from MyST-Parser until > 2.0.0.
+      # https://github.com/executablebooks/MyST-Parser/issues/612
+      - run: pytest -W error -W ignore::DeprecationWarning --cov sphinxcontrib.opencontracting
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: coveralls --service=github
