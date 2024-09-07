@@ -1,3 +1,46 @@
 [build-system]
 requires = ["setuptools>=61.2"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "sphinxcontrib-opencontracting"
+version = "0.0.9"
+authors = [{name = "Open Contracting Partnership", email = "data@open-contracting.org"}]
+description = "Provides Sphinx directives for the documentation of the Open Contracting Data Standard"
+readme = "README.rst"
+license = {text = "BSD"}
+urls = {Homepage = "https://github.com/open-contracting/sphinxcontrib-opencontracting"}
+classifiers = [
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Framework :: Sphinx :: Extension",
+]
+dependencies = [
+    "docutils",
+    "jsonpointer",
+    "MyST-Parser",
+    "requests",
+    "ocdsextensionregistry>=0.0.8",
+    "sphinx",
+]
+
+[project.optional-dependencies]
+test = [
+    "coverage",
+    "lxml",
+    "pytest",
+    "sphinx>=4.4.0",
+]
+
+[tool.setuptools.packages.find]
+exclude = [
+    "tests",
+    "tests.*",
+]

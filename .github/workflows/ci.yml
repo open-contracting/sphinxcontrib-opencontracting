@@ -7,7 +7,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-        python-version: [3.8, 3.9, '3.10', '3.11', '3.12', pypy-3.9]
+        python-version: [3.8, 3.9, '3.10', '3.11', '3.12', pypy-3.10]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -15,13 +15,11 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
           cache-dependency-path: setup.cfg
-      - if: matrix.os == 'ubuntu-latest' && matrix.python-version == 'pypy-3.9'
+      - if: matrix.os == 'ubuntu-latest' && matrix.python-version == 'pypy-3.10'
         run: |
           sudo apt update
           sudo apt install libxml2-dev libxslt-dev
       - run: pip install .[test]
-      # MyST-Parser > 2.0.0 https://github.com/executablebooks/MyST-Parser/issues/612
-      - run: pytest -W error -W ignore::DeprecationWarning --cov sphinxcontrib.opencontracting
-      - env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: coveralls --service=github
+      # MyST-Parser 3+ requires Sphinx 6+ https://github.com/executablebooks/MyST-Parser/issues/612
+      - run: coverage run --source=sphinxcontrib.opencontracting -m pytest -W error -W ignore::DeprecationWarning
+      - uses: coverallsapp/github-action@v2
