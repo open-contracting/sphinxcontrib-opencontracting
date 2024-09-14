@@ -16,7 +16,7 @@ from sphinx.errors import SphinxError
 
 live_branch = os.getenv('GITHUB_REF_NAME', '') in {'1.0', '1.1', 'latest'}
 extensions_url = 'https://raw.githubusercontent.com/open-contracting/extension_registry/main/extensions.csv'
-extension_versions_url = 'https://raw.githubusercontent.com/open-contracting/extension_registry/main/extension_versions.csv'  # noqa: E501
+extension_versions_url = 'https://raw.githubusercontent.com/open-contracting/extension_registry/main/extension_versions.csv'
 extension_explorer_template = 'https://extensions.open-contracting.org/{}/extensions/{}/{}/'
 WORKEDEXAMPLE_ENV_ATTRIBUTE = 'workedexample_all_worked_examples'
 
@@ -31,7 +31,7 @@ def to_docutils(text):
 
 @lru_cache
 def get_extension_explorer_extensions_json():
-    return requests.get('https://extensions.open-contracting.org/extensions.json').json()
+    return requests.get('https://extensions.open-contracting.org/extensions.json', timeout=10).json()
 
 
 class Error(SphinxError):
@@ -54,13 +54,13 @@ class FieldDescription(Directive):
                 schema = json.load(f)
                 description = jsonpointer.resolve_pointer(schema, f'{pointer}/description')
         except FileNotFoundError:
-            raise self.error(f'JSON Schema file not found: {path}')
+            raise self.error(f'JSON Schema file not found: {path}') from None
         except PermissionError:
-            raise self.error(f'JSON Schema file not readable: {path}')
+            raise self.error(f'JSON Schema file not readable: {path}') from None
         except json.decoder.JSONDecodeError:
-            raise self.error(f'JSON Schema file not valid: {path}')
+            raise self.error(f'JSON Schema file not valid: {path}') from None
         except jsonpointer.JsonPointerException:
-            raise self.error(f"Pointer '{pointer}/description' not found: {path}")
+            raise self.error(f"Pointer '{pointer}/description' not found: {path}") from None
 
         block_quote = nodes.block_quote('', *to_docutils(description).children,
                                         classes=['directive--field-description'])
@@ -77,7 +77,7 @@ class CodeDescription(Directive):
         try:
             headers = config.codelist_headers[language]
         except KeyError:
-            raise self.error(f"codelist_headers in conf.py is missing a '{language}' key")
+            raise self.error(f"codelist_headers in conf.py is missing a '{language}' key") from None
 
         filename = self.arguments[0]
         code = self.arguments[1]
@@ -91,13 +91,13 @@ class CodeDescription(Directive):
                 reader = csv.DictReader(f)
                 description = next(row[headers['description']] for row in reader if row[headers['code']] == code)
         except FileNotFoundError:
-            raise self.error(f'CSV codelist file not found: {path}')
+            raise self.error(f'CSV codelist file not found: {path}') from None
         except PermissionError:
-            raise self.error(f'CSV codelist file not readable: {path}')
+            raise self.error(f'CSV codelist file not readable: {path}') from None
         except KeyError as e:
-            raise self.error(f"Column {e} not found ({', '.join(reader.fieldnames)}): {path}")
+            raise self.error(f"Column {e} not found ({', '.join(reader.fieldnames)}): {path}") from None
         except StopIteration:
-            raise self.error(f"Value '{code}' not found in column '{headers['code']}': {path}")
+            raise self.error(f"Value '{code}' not found in column '{headers['code']}': {path}") from None
 
         block_quote = nodes.block_quote('', *to_docutils(description).children,
                                         classes=['directive--code-description'])
@@ -118,7 +118,7 @@ class ExtensionExplorerLinkList(Directive):
             try:
                 name = extensions[identifier]['versions'][version]['metadata']['name']
             except KeyError:
-                raise self.error(f"{identifier}=={version} is not in the extension registry")
+                raise self.error(f"{identifier}=={version} is not in the extension registry") from None
 
             if language not in name:
                 language = 'en'
@@ -231,11 +231,11 @@ class ExtensionList(Directive):
         return [admonition_node]
 
 
-class worked_example_list(nodes.General, nodes.Element):
+class worked_example_list(nodes.General, nodes.Element):  # noqa: N801
     pass
 
 
-class worked_example(nodes.General, nodes.Element):
+class worked_example(nodes.General, nodes.Element):  # noqa: N801
     pass
 
 
@@ -359,10 +359,10 @@ def setup(app):
     app.connect('env-purge-doc', purge_worked_examples)
     app.connect('env-merge-info', merge_worked_examples)
 
-    app.add_config_value('extension_versions', {}, True)
+    app.add_config_value('extension_versions', {}, rebuild=True)
     app.add_config_value('codelist_headers', {
         'en': {'code': 'Code', 'description': 'Description'},
         'es': {'code': 'Código', 'description': 'Descripción'},
         'fr': {'code': 'Code', 'description': 'Description'},
         'it': {'code': 'Codice', 'description': 'Descrizione'},
-    }, True)
+    }, rebuild=True)
