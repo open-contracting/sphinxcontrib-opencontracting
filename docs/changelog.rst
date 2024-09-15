@@ -10,6 +10,7 @@ Unreleased
 -------------------
 
 -  Release to workaround PyPI issues.
+-  Drop Python 3.7 support.
 
 0.0.9 (2023-06-06)
 ------------------
