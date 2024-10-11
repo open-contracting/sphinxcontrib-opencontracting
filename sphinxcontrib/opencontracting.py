@@ -187,7 +187,7 @@ class ExtensionList(Directive):
             # Avoid "403 Client Error: rate limit exceeded for url" on development branches.
             try:
                 metadata = extension.metadata
-            except requests.exceptions.HTTPError:
+            except requests.HTTPError:
                 if live_branch:
                     raise
                 metadata = {'name': {'en': identifier}, 'description': {'en': identifier}}
