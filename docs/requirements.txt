@@ -1,1 +1,2 @@
 furo
+ocdsextensionregistry>=0.5.5
