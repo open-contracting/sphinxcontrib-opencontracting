@@ -57,7 +57,7 @@ class FieldDescription(Directive):
             raise self.error(f'JSON Schema file not found: {path}') from None
         except PermissionError:
             raise self.error(f'JSON Schema file not readable: {path}') from None
-        except json.decoder.JSONDecodeError:
+        except json.JSONDecodeError:
             raise self.error(f'JSON Schema file not valid: {path}') from None
         except jsonpointer.JsonPointerException:
             raise self.error(f"Pointer '{pointer}/description' not found: {path}") from None
