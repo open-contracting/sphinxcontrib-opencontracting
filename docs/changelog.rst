@@ -4,13 +4,14 @@ Changelog
 Unreleased
 ----------
 
--  Drop Python 3.8, 3.9 support.
+-  Add support for Python 3.13.
+-  Drop support for Python 3.8 and 3.9.
 
 0.0.10 (2024-09-07)
 -------------------
 
 -  Release to workaround PyPI issues.
--  Drop Python 3.7 support.
+-  Drop support for Python 3.7.
 
 0.0.9 (2023-06-06)
 ------------------
@@ -21,7 +22,7 @@ Unreleased
 ------------------
 
 -  Add MyST-Parser 0.18 support.
--  Drop Python 3.6 support.
+-  Drop support for Python 3.6.
 
 0.0.7 (2022-04-05)
 ------------------
