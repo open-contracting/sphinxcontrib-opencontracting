@@ -1,5 +1,5 @@
-extensions = ['sphinxcontrib.opencontracting']
-exclude_patterns = ['_build']
+extensions = ["sphinxcontrib.opencontracting"]
+exclude_patterns = ["_build"]
 codelist_headers = {
-    'en': {'code': 'non-code', 'description': 'non-description'},
+    "en": {"code": "non-code", "description": "non-description"},
 }

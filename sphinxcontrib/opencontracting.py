@@ -14,11 +14,12 @@ from myst_parser.parsers.mdit import create_md_parser
 from ocdsextensionregistry import ExtensionRegistry
 from sphinx.errors import SphinxError
 
-live_branch = os.getenv('GITHUB_REF_NAME', '') in {'1.0', '1.1', 'latest'}
-extensions_url = 'https://raw.githubusercontent.com/open-contracting/extension_registry/main/extensions.csv'
-extension_versions_url = 'https://raw.githubusercontent.com/open-contracting/extension_registry/main/extension_versions.csv'
-extension_explorer_template = 'https://extensions.open-contracting.org/{}/extensions/{}/{}/'
-WORKEDEXAMPLE_ENV_ATTRIBUTE = 'workedexample_all_worked_examples'
+live_branch = os.getenv("GITHUB_REF_NAME", "") in {"1.0", "1.1", "latest"}
+url_prefix = "https://raw.githubusercontent.com/open-contracting/extension_registry/main/"
+extensions_url = f"{url_prefix}extensions.csv"
+extension_versions_url = f"{url_prefix}extension_versions.csv"
+extension_explorer_template = "https://extensions.open-contracting.org/{}/extensions/{}/{}/"
+WORKEDEXAMPLE_ENV_ATTRIBUTE = "workedexample_all_worked_examples"
 
 
 # to_docutils was removed in myst-parser>=0.18.
@@ -31,11 +32,11 @@ def to_docutils(text):
 
 @lru_cache
 def get_extension_explorer_extensions_json():
-    return requests.get('https://extensions.open-contracting.org/extensions.json', timeout=10).json()
+    return requests.get("https://extensions.open-contracting.org/extensions.json", timeout=10).json()
 
 
 class Error(SphinxError):
-    category = 'sphinxcontrib-opencontracting error'
+    category = "sphinxcontrib-opencontracting error"
 
 
 class FieldDescription(Directive):
@@ -50,20 +51,21 @@ class FieldDescription(Directive):
         env.note_dependency(path)
 
         try:
-            with open(path, encoding='utf-8') as f:
+            with open(path, encoding="utf-8") as f:
                 schema = json.load(f)
-                description = jsonpointer.resolve_pointer(schema, f'{pointer}/description')
+                description = jsonpointer.resolve_pointer(schema, f"{pointer}/description")
         except FileNotFoundError:
-            raise self.error(f'JSON Schema file not found: {path}') from None
+            raise self.error(f"JSON Schema file not found: {path}") from None
         except PermissionError:
-            raise self.error(f'JSON Schema file not readable: {path}') from None
+            raise self.error(f"JSON Schema file not readable: {path}") from None
         except json.JSONDecodeError:
-            raise self.error(f'JSON Schema file not valid: {path}') from None
+            raise self.error(f"JSON Schema file not valid: {path}") from None
         except jsonpointer.JsonPointerException:
             raise self.error(f"Pointer '{pointer}/description' not found: {path}") from None
 
-        block_quote = nodes.block_quote('', *to_docutils(description).children,
-                                        classes=['directive--field-description'])
+        block_quote = nodes.block_quote(
+            "", *to_docutils(description).children, classes=["directive--field-description"]
+        )
 
         return [block_quote]
 
@@ -73,7 +75,7 @@ class CodeDescription(Directive):
 
     def run(self):
         config = self.state.document.settings.env.config
-        language = config.overrides.get('language', 'en')
+        language = config.overrides.get("language", "en")
         try:
             headers = config.codelist_headers[language]
         except KeyError:
@@ -87,20 +89,21 @@ class CodeDescription(Directive):
         env.note_dependency(path)
 
         try:
-            with open(path, encoding='utf-8') as f:
+            with open(path, encoding="utf-8") as f:
                 reader = csv.DictReader(f)
-                description = next(row[headers['description']] for row in reader if row[headers['code']] == code)
+                description = next(row[headers["description"]] for row in reader if row[headers["code"]] == code)
         except FileNotFoundError:
-            raise self.error(f'CSV codelist file not found: {path}') from None
+            raise self.error(f"CSV codelist file not found: {path}") from None
         except PermissionError:
-            raise self.error(f'CSV codelist file not readable: {path}') from None
+            raise self.error(f"CSV codelist file not readable: {path}") from None
         except KeyError as e:
             raise self.error(f"Column {e} not found ({', '.join(reader.fieldnames)}): {path}") from None
         except StopIteration:
             raise self.error(f"Value '{code}' not found in column '{headers['code']}': {path}") from None
 
-        block_quote = nodes.block_quote('', *to_docutils(description).children,
-                                        classes=['directive--code-description'])
+        block_quote = nodes.block_quote(
+            "", *to_docutils(description).children, classes=["directive--code-description"]
+        )
 
         return [block_quote]
 
@@ -109,66 +112,63 @@ class ExtensionExplorerLinkList(Directive):
     def run(self):
         config = self.state.document.settings.env.config
         extension_versions = config.extension_versions
-        language = config.overrides.get('language', 'en')
+        language = config.overrides.get("language", "en")
 
         items = []
         extensions = get_extension_explorer_extensions_json()
 
         for identifier, version in extension_versions.items():
             try:
-                name = extensions[identifier]['versions'][version]['metadata']['name']
+                name = extensions[identifier]["versions"][version]["metadata"]["name"]
             except KeyError:
                 raise self.error(f"{identifier}=={version} is not in the extension registry") from None
 
             if language not in name:
-                language = 'en'
+                language = "en"
 
             url = extension_explorer_template.format(language, identifier, version)
 
             text = name[language]
-            if version != 'master':
-                text += f' ({version})'
+            if version != "master":
+                text += f" ({version})"
 
-            reference = nodes.reference('', text, refuri=url)
-            paragraph = nodes.paragraph('', '', reference)
-            item = nodes.list_item('', paragraph)
+            reference = nodes.reference("", text, refuri=url)
+            paragraph = nodes.paragraph("", "", reference)
+            item = nodes.list_item("", paragraph)
             items.append(item)
 
-        return [nodes.bullet_list('', *items)]
+        return [nodes.bullet_list("", *items)]
 
 
 class ExtensionList(Directive):
     required_arguments = 1
     final_argument_whitespace = True
-    option_spec = {'class': directives.class_option,
-                   'name': directives.unchanged,
-                   'list': directives.unchanged}
+    option_spec = {"class": directives.class_option, "name": directives.unchanged, "list": directives.unchanged}
 
     def run(self):
         config = self.state.document.settings.env.config
         extension_versions = config.extension_versions
-        language = config.overrides.get('language', 'en')
+        language = config.overrides.get("language", "en")
 
-        extension_list_name = self.options.pop('list', '')
+        extension_list_name = self.options.pop("list", "")
         set_classes(self.options)
 
-        admonition_node = nodes.admonition('', **self.options)
+        admonition_node = nodes.admonition("", **self.options)
         self.add_name(admonition_node)
 
         title_text = self.arguments[0]
 
-        textnodes, _ = self.state.inline_text(title_text,
-                                              self.lineno)
+        textnodes, _ = self.state.inline_text(title_text, self.lineno)
 
-        title = nodes.title(title_text, '', *textnodes)
+        title = nodes.title(title_text, "", *textnodes)
         title.line = 0
-        title.source = 'extension_list_' + extension_list_name
+        title.source = "extension_list_" + extension_list_name
         admonition_node += title
-        if 'classes' not in self.options:
-            admonition_node['classes'] += ['admonition', 'note']
+        if "classes" not in self.options:
+            admonition_node["classes"] += ["admonition", "note"]
 
-        admonition_node['classes'] += ['extension_list']
-        admonition_node['ids'] += ['extensionlist-' + extension_list_name]
+        admonition_node["classes"] += ["extension_list"]
+        admonition_node["ids"] += ["extensionlist-" + extension_list_name]
 
         definition_list = nodes.definition_list()
         definition_list.line = 0
@@ -190,31 +190,31 @@ class ExtensionList(Directive):
             except requests.HTTPError:
                 if live_branch:
                     raise
-                metadata = {'name': {'en': identifier}, 'description': {'en': identifier}}
+                metadata = {"name": {"en": identifier}, "description": {"en": identifier}}
 
-            name = metadata['name']['en']
-            description = metadata['description']['en']
+            name = metadata["name"]["en"]
+            description = metadata["description"]["en"]
 
             some_term, _ = self.state.inline_text(name, self.lineno)
             some_def, _ = self.state.inline_text(description, self.lineno)
 
-            link = nodes.reference(name, '', *some_term)
-            link['refuri'] = extension_explorer_template.format(language, identifier, version)
-            link['translatable'] = True
-            link.source = 'extension_list_' + extension_list_name
+            link = nodes.reference(name, "", *some_term)
+            link["refuri"] = extension_explorer_template.format(language, identifier, version)
+            link["translatable"] = True
+            link.source = "extension_list_" + extension_list_name
             link.line = num + 1
 
-            term = nodes.term(name, '', link)
+            term = nodes.term(name, "", link)
 
             definition_list += term
 
-            text = nodes.paragraph(description, '', *some_def)
-            text.source = 'extension_list_' + extension_list_name
+            text = nodes.paragraph(description, "", *some_def)
+            text.source = "extension_list_" + extension_list_name
             text.line = num + 1
             definition_list += nodes.definition(description, text)
 
         if extension_list_name and not registry.filter(category=extension_list_name):
-            raise self.warning(f'No extensions have category {extension_list_name} in extensionlist directive')
+            raise self.warning(f"No extensions have category {extension_list_name} in extensionlist directive")
 
         admonition_node += definition_list
 
@@ -222,8 +222,8 @@ class ExtensionList(Directive):
         community_text, _ = self.state.inline_text(community, self.lineno)
 
         community_paragraph = nodes.paragraph(community, *community_text)
-        community_paragraph['classes'] += ['hide']
-        community_paragraph.source = 'extension_list_' + extension_list_name
+        community_paragraph["classes"] += ["hide"]
+        community_paragraph.source = "extension_list_" + extension_list_name
         community_paragraph.line = num + 2
 
         admonition_node += community_paragraph
@@ -250,11 +250,11 @@ def depart_worked_example(self, node):
 class WorkedExampleList(Directive):
     required_arguments = 1
     final_argument_whitespace = True
-    option_spec = {'tag': directives.unchanged}
+    option_spec = {"tag": directives.unchanged}
 
     def run(self):
         title = self.arguments[0]
-        tag = self.options.pop('tag', '')
+        tag = self.options.pop("tag", "")
 
         return [worked_example_list(tag=tag, title=title)]
 
@@ -262,29 +262,31 @@ class WorkedExampleList(Directive):
 class WorkedExample(Directive):
     required_arguments = 1
     final_argument_whitespace = True
-    option_spec = {'tags': directives.unchanged}
+    option_spec = {"tags": directives.unchanged}
 
     def run(self):
         env = self.state.document.settings.env
 
         title = self.arguments[0]
-        tags = self.options.pop('tags', '')
+        tags = self.options.pop("tags", "")
 
-        target_id = f'worked-example-{env.new_serialno("worked-example")}'
-        target_node = nodes.target('', '', ids=[target_id])
+        target_id = f"worked-example-{env.new_serialno('worked-example')}"
+        target_node = nodes.target("", "", ids=[target_id])
 
         node = worked_example()
 
         if not hasattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE):
             setattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE, [])
 
-        getattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE).append({
-            'docname': env.docname,
-            'lineno': self.lineno,
-            'target': target_node,
-            'title': title,
-            'tags': tags,
-        })
+        getattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE).append(
+            {
+                "docname": env.docname,
+                "lineno": self.lineno,
+                "target": target_node,
+                "title": title,
+                "tags": tags,
+            }
+        )
 
         return [target_node, node]
 
@@ -293,9 +295,11 @@ def purge_worked_examples(app, env, docname):
     if not hasattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE):
         return
 
-    setattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE, [
-        example for example in getattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE) if example['docname'] != docname
-    ])
+    setattr(
+        env,
+        WORKEDEXAMPLE_ENV_ATTRIBUTE,
+        [example for example in getattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE) if example["docname"] != docname],
+    )
 
 
 def merge_worked_examples(app, env, docnames, other):
@@ -313,56 +317,62 @@ def process_worked_example_nodes(app, doctree, fromdocname):
         setattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE, [])
 
     for node in doctree.findall(worked_example_list):
-        title = node['title']
-        tag = node['tag']
+        title = node["title"]
+        tag = node["tag"]
 
-        title_node = nodes.title('', title)
-        admonition_node = nodes.admonition('')
-        admonition_node['classes'] += ['note']
+        title_node = nodes.title("", title)
+        admonition_node = nodes.admonition("")
+        admonition_node["classes"] += ["note"]
         admonition_node += title_node
 
         items = []
         for example in getattr(env, WORKEDEXAMPLE_ENV_ATTRIBUTE):
-            if tag not in example['tags'].split(','):
+            if tag not in example["tags"].split(","):
                 continue
 
             uri = f"{app.builder.get_relative_uri(fromdocname, example['docname'])}#{example['target']['refid']}"
-            reference = nodes.reference('', example['title'], refuri=uri)
-            reference['translatable'] = True
+            reference = nodes.reference("", example["title"], refuri=uri)
+            reference["translatable"] = True
 
-            paragraph = nodes.paragraph('', '', reference)
-            item = nodes.list_item('', paragraph)
+            paragraph = nodes.paragraph("", "", reference)
+            item = nodes.list_item("", paragraph)
             items.append(item)
 
         if not items:
-            raise Error(f'No worked examples are tagged with {tag}')
+            raise Error(f"No worked examples are tagged with {tag}")
 
-        admonition_node += nodes.bullet_list('', *items)
+        admonition_node += nodes.bullet_list("", *items)
         node.replace_self(admonition_node)
 
 
 def setup(app):
-    app.add_directive('field-description', FieldDescription)
-    app.add_directive('code-description', CodeDescription)
-    app.add_directive('extensionexplorerlinklist', ExtensionExplorerLinkList)
-    app.add_directive('extensionlist', ExtensionList)
-    app.add_directive('workedexample', WorkedExample)
-    app.add_directive('workedexamplelist', WorkedExampleList)
+    app.add_directive("field-description", FieldDescription)
+    app.add_directive("code-description", CodeDescription)
+    app.add_directive("extensionexplorerlinklist", ExtensionExplorerLinkList)
+    app.add_directive("extensionlist", ExtensionList)
+    app.add_directive("workedexample", WorkedExample)
+    app.add_directive("workedexamplelist", WorkedExampleList)
 
     app.add_node(worked_example_list)
-    app.add_node(worked_example,
-                 html=(visit_worked_example, depart_worked_example),
-                 latex=(visit_worked_example, depart_worked_example),
-                 text=(visit_worked_example, depart_worked_example))
+    app.add_node(
+        worked_example,
+        html=(visit_worked_example, depart_worked_example),
+        latex=(visit_worked_example, depart_worked_example),
+        text=(visit_worked_example, depart_worked_example),
+    )
 
-    app.connect('doctree-resolved', process_worked_example_nodes)
-    app.connect('env-purge-doc', purge_worked_examples)
-    app.connect('env-merge-info', merge_worked_examples)
+    app.connect("doctree-resolved", process_worked_example_nodes)
+    app.connect("env-purge-doc", purge_worked_examples)
+    app.connect("env-merge-info", merge_worked_examples)
 
-    app.add_config_value('extension_versions', {}, rebuild=True)
-    app.add_config_value('codelist_headers', {
-        'en': {'code': 'Code', 'description': 'Description'},
-        'es': {'code': 'Código', 'description': 'Descripción'},
-        'fr': {'code': 'Code', 'description': 'Description'},
-        'it': {'code': 'Codice', 'description': 'Descrizione'},
-    }, rebuild=True)
+    app.add_config_value("extension_versions", {}, rebuild=True)
+    app.add_config_value(
+        "codelist_headers",
+        {
+            "en": {"code": "Code", "description": "Description"},
+            "es": {"code": "Código", "description": "Descripción"},
+            "fr": {"code": "Code", "description": "Description"},
+            "it": {"code": "Codice", "description": "Descrizione"},
+        },
+        rebuild=True,
+    )
