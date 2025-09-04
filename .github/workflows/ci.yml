@@ -24,4 +24,6 @@ jobs:
       - run: pip install .[test]
       # MyST-Parser 3+ requires Sphinx 6+ https://github.com/executablebooks/MyST-Parser/issues/612
       - run: coverage run --source=sphinxcontrib.opencontracting -m pytest -W error -W ignore::DeprecationWarning
-      - uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b # v2.3.6
+      # https://github.com/coverallsapp/homebrew-coveralls/issues/65
+      - if: matrix.os != 'macos-latest'
+        uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b # v2.3.6
