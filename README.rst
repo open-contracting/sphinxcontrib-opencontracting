@@ -20,7 +20,7 @@ If you are viewing this on GitHub or PyPI, open the `full documentation <https:/
    :target: https://pypi.org/project/sphinxcontrib-opencontracting/
 .. |Build Status| image:: https://github.com/open-contracting/sphinxcontrib-opencontracting/actions/workflows/ci.yml/badge.svg
    :target: https://github.com/open-contracting/sphinxcontrib-opencontracting/actions/workflows/ci.yml
-.. |Coverage Status| image:: https://coveralls.io/repos/github/open-contracting/sphinxcontrib-opencontracting/badge.svg?branch=main
-   :target: https://coveralls.io/github/open-contracting/sphinxcontrib-opencontracting?branch=main
+.. |Coverage Status| image:: https://codecov.io/github/open-contracting/sphinxcontrib-opencontracting/graph/badge.svg
+   :target: https://codecov.io/github/open-contracting/sphinxcontrib-opencontracting
 .. |Python Version| image:: https://img.shields.io/pypi/pyversions/sphinxcontrib-opencontracting.svg
    :target: https://pypi.org/project/sphinxcontrib-opencontracting/
