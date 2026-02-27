@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sphinxcontrib-opencontracting"
-version = "1.0.0"
+version = "0.0.11"
 authors = [{name = "Open Contracting Partnership", email = "data@open-contracting.org"}]
 description = "Provides Sphinx directives for the documentation of the Open Contracting Data Standard"
 readme = "README.rst"
@@ -22,7 +22,7 @@ classifiers = [
     "Framework :: Sphinx :: Extension",
 ]
 dependencies = [
-    "docutils>=0.22",
+    "docutils",
     "jsonpointer",
     "MyST-Parser",
     "requests",

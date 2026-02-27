@@ -23,7 +23,7 @@ jobs:
           sudo apt install libxml2-dev libxslt-dev
       - run: pip install .[test]
       # MyST-Parser 3+ requires Sphinx 6+ https://github.com/executablebooks/MyST-Parser/issues/612
-      - run: coverage run --source=sphinxcontrib.opencontracting -m pytest -W error -W ignore::DeprecationWarning
+      - run: coverage run --source=sphinxcontrib.opencontracting -m pytest -W error -W ignore::DeprecationWarning -W ignore::PendingDeprecationWarning
       - uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
         with:
           fail_ci_if_error: true

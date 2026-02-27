@@ -7,12 +7,16 @@ import jsonpointer
 import requests
 from docutils import nodes
 from docutils.parsers.rst import Directive, directives
-from docutils.parsers.rst.roles import normalize_options
 from myst_parser.config.main import MdParserConfig
 from myst_parser.mdit_to_docutils.base import DocutilsRenderer, make_document
 from myst_parser.parsers.mdit import create_md_parser
 from ocdsextensionregistry import ExtensionRegistry
 from sphinx.errors import SphinxError
+
+try:
+    from docutils.parsers.rst.roles import normalize_options
+except ImportError:
+    from docutils.parsers.rst.roles import set_classes as normalize_options
 
 live_branch = os.getenv("GITHUB_REF_NAME", "") in {"1.0", "1.1", "latest"}
 url_prefix = "https://raw.githubusercontent.com/open-contracting/extension_registry/main/"
