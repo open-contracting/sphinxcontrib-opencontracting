@@ -1,9 +1,10 @@
 Changelog
 =========
 
-Unreleased
-----------
+1.0.0 (2026-02-27)
+------------------
 
+-  Drop support for docutils less than 0.22.
 -  Add support for Python 3.13.
 -  Drop support for Python 3.8 and 3.9.
 

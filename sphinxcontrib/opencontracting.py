@@ -7,7 +7,7 @@ import jsonpointer
 import requests
 from docutils import nodes
 from docutils.parsers.rst import Directive, directives
-from docutils.parsers.rst.roles import set_classes
+from docutils.parsers.rst.roles import normalize_options
 from myst_parser.config.main import MdParserConfig
 from myst_parser.mdit_to_docutils.base import DocutilsRenderer, make_document
 from myst_parser.parsers.mdit import create_md_parser
@@ -151,7 +151,7 @@ class ExtensionList(Directive):
         language = config.overrides.get("language", "en")
 
         extension_list_name = self.options.pop("list", "")
-        set_classes(self.options)
+        normalize_options(self.options)
 
         admonition_node = nodes.admonition("", **self.options)
         self.add_name(admonition_node)

@@ -15,7 +15,7 @@ project = "sphinxcontrib-opencontracting"
 copyright = "2020, Open Contracting Partnership"
 author = "Open Contracting Partnership"
 
-version = "0.0.10"
+version = "1.0.0"
 release = version
 
 # -- General configuration ---------------------------------------------------
