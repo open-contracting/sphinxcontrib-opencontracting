@@ -24,6 +24,6 @@ jobs:
       - run: pip install .[test]
       # MyST-Parser 3+ requires Sphinx 6+ https://github.com/executablebooks/MyST-Parser/issues/612
       - run: coverage run --source=sphinxcontrib.opencontracting -m pytest -W error -W ignore::DeprecationWarning -W ignore::PendingDeprecationWarning
-      - uses: codecov/codecov-action@1af58845a975a7985b0beb0cbe6fbbb71a41dbad # v5.5.3
+      - uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
         with:
           fail_ci_if_error: true
