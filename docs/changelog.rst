@@ -4,8 +4,8 @@ Changelog
 0.0.11 (2026-02-27)
 -------------------
 
--  Add support for Python 3.13.
--  Drop support for Python 3.8 and 3.9.
+-  Add support for Python 3.13, 3.14.
+-  Drop support for Python 3.8, 3.9.
 
 0.0.10 (2024-09-07)
 -------------------
