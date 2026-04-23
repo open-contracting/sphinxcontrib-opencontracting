@@ -7,3 +7,5 @@ jobs:
       contents: read
     with:
       python-version: '3.10'
+      # Simplified schema example in docs/
+      ocds-schema-exceptions: schema.json
