@@ -1,5 +1,5 @@
-import os.path
+from pathlib import Path
 
 
 def path(*args):
-    return os.path.join(os.path.dirname(os.path.realpath(__file__)), "fixtures", *args)
+    return Path(__file__).resolve().parent.joinpath("fixtures", *args)

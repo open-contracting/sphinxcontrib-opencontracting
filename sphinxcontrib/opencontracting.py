@@ -2,6 +2,7 @@ import csv
 import json
 import os
 from functools import lru_cache
+from pathlib import Path
 
 import jsonpointer
 import requests
@@ -51,11 +52,11 @@ class FieldDescription(Directive):
         pointer = self.arguments[1]
 
         env = self.state.document.settings.env
-        path = os.path.join(os.path.dirname(env.doc2path(env.docname)), filename)
+        path = Path(env.doc2path(env.docname)).parent / filename
         env.note_dependency(path)
 
         try:
-            with open(path, encoding="utf-8") as f:
+            with path.open(encoding="utf-8") as f:
                 schema = json.load(f)
                 description = jsonpointer.resolve_pointer(schema, f"{pointer}/description")
         except FileNotFoundError:
@@ -89,11 +90,11 @@ class CodeDescription(Directive):
         code = self.arguments[1]
 
         env = self.state.document.settings.env
-        path = os.path.join(os.path.dirname(env.doc2path(env.docname)), filename)
+        path = Path(env.doc2path(env.docname)).parent / filename
         env.note_dependency(path)
 
         try:
-            with open(path, encoding="utf-8") as f:
+            with path.open(encoding="utf-8") as f:
                 reader = csv.DictReader(f)
                 description = next(row[headers["description"]] for row in reader if row[headers["code"]] == code)
         except FileNotFoundError:

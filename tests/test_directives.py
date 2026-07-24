@@ -18,11 +18,11 @@ def assert_build(app, status, warning, basename, messages=None):
     app.build()
     warnings = warning.getvalue().strip()
 
-    with open(path(basename, "_build", "html", "index.html"), encoding="utf-8") as f:
+    with path(basename, "_build", "html", "index.html").open(encoding="utf-8") as f:
         element = lxml.html.fromstring(f.read()).xpath('//div[@class="documentwrapper"]')[0]
         actual = lxml.html.tostring(element).decode()
 
-    with open(path(f"{basename}.html"), encoding="utf-8") as f:
+    with path(f"{basename}.html").open(encoding="utf-8") as f:
         expected = f.read()
 
     assert "build succeeded" in status.getvalue()

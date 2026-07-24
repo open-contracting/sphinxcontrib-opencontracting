@@ -56,7 +56,6 @@ ignore = [
     "ARG001",  # sphinx
     "D1",
     "INP001",  # namespace package
-    "PTH",
     "RUF012",  # sphinx
     "TRY003",  # errors
 ]
